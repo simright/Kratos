@@ -19,7 +19,7 @@
 
 // Project includes
 #include "includes/define.h"
-#include "custom_elements/updated_lagrangian_axisymmetry.hpp"
+#include "custom_elements/updated_lagrangian_embedded.hpp"
 #include "utilities/math_utils.h"
 #include "includes/constitutive_law.h"
 #include "custom_utilities/particle_mechanics_math_utilities.h"
@@ -31,7 +31,7 @@ namespace Kratos
 //******************************CONSTRUCTOR*******************************************
 //************************************************************************************
 
-UpdatedLagrangianAxisymmetry::UpdatedLagrangianAxisymmetry( )
+UpdatedLagrangianEmbedded::UpdatedLagrangianEmbedded( )
     : UpdatedLagrangian( )
 {
     //DO NOT CALL IT: only needed for Register and Serialization!!!
@@ -40,7 +40,7 @@ UpdatedLagrangianAxisymmetry::UpdatedLagrangianAxisymmetry( )
 //******************************CONSTRUCTOR*******************************************
 //************************************************************************************
 
-UpdatedLagrangianAxisymmetry::UpdatedLagrangianAxisymmetry( IndexType NewId, GeometryType::Pointer pGeometry )
+UpdatedLagrangianEmbedded::UpdatedLagrangianEmbedded( IndexType NewId, GeometryType::Pointer pGeometry )
         : UpdatedLagrangian( NewId, pGeometry )
 {
     //DO NOT ADD DOFS HERE!!!
@@ -49,7 +49,7 @@ UpdatedLagrangianAxisymmetry::UpdatedLagrangianAxisymmetry( IndexType NewId, Geo
 //******************************CONSTRUCTOR*******************************************
 //************************************************************************************
 
-UpdatedLagrangianAxisymmetry::UpdatedLagrangianAxisymmetry( IndexType NewId, GeometryType::Pointer pGeometry, PropertiesType::Pointer pProperties )
+UpdatedLagrangianEmbedded::UpdatedLagrangianEmbedded( IndexType NewId, GeometryType::Pointer pGeometry, PropertiesType::Pointer pProperties )
         : UpdatedLagrangian( NewId, pGeometry, pProperties )
 {
 mFinalizedStep = true;
@@ -58,7 +58,7 @@ mFinalizedStep = true;
 //******************************COPY CONSTRUCTOR**************************************
 //************************************************************************************
 
-UpdatedLagrangianAxisymmetry::UpdatedLagrangianAxisymmetry( UpdatedLagrangianAxisymmetry const& rOther)
+UpdatedLagrangianEmbedded::UpdatedLagrangianEmbedded( UpdatedLagrangianEmbedded const& rOther)
     :UpdatedLagrangian(rOther)
 {
 }
@@ -66,31 +66,31 @@ UpdatedLagrangianAxisymmetry::UpdatedLagrangianAxisymmetry( UpdatedLagrangianAxi
 //*********************************OPERATIONS*****************************************
 //************************************************************************************
 
-Element::Pointer UpdatedLagrangianAxisymmetry::Create( IndexType NewId, NodesArrayType const& ThisNodes, PropertiesType::Pointer pProperties ) const
+Element::Pointer UpdatedLagrangianEmbedded::Create( IndexType NewId, NodesArrayType const& ThisNodes, PropertiesType::Pointer pProperties ) const
 {
-    return Element::Pointer( new UpdatedLagrangianAxisymmetry( NewId, GetGeometry().Create( ThisNodes ), pProperties ) );
+    return Element::Pointer( new UpdatedLagrangianEmbedded( NewId, GetGeometry().Create( ThisNodes ), pProperties ) );
 }
 
 //************************************CLONE*******************************************
 //************************************************************************************
 
-Element::Pointer UpdatedLagrangianAxisymmetry::Clone( IndexType NewId, NodesArrayType const& rThisNodes ) const
+Element::Pointer UpdatedLagrangianEmbedded::Clone( IndexType NewId, NodesArrayType const& rThisNodes ) const
 {
 
-    UpdatedLagrangianAxisymmetry NewElement (NewId, GetGeometry().Create( rThisNodes ), pGetProperties() );
+    UpdatedLagrangianEmbedded NewElement (NewId, GetGeometry().Create( rThisNodes ), pGetProperties() );
 
-    return Element::Pointer( new UpdatedLagrangianAxisymmetry(NewElement) );
+    return Element::Pointer( new UpdatedLagrangianEmbedded(NewElement) );
 }
 
 //*******************************DESTRUCTOR*******************************************
 //************************************************************************************
 
-UpdatedLagrangianAxisymmetry::~UpdatedLagrangianAxisymmetry()
+UpdatedLagrangianEmbedded::~UpdatedLagrangianEmbedded()
 {
 }
 
 //************************************************************************************
-void UpdatedLagrangianAxisymmetry::Initialize()
+void UpdatedLagrangianEmbedded::Initialize()
 {
     KRATOS_TRY
     UpdatedLagrangian::Initialize();
@@ -110,7 +110,7 @@ void UpdatedLagrangianAxisymmetry::Initialize()
 //************************************************************************************
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::InitializeGeneralVariables (GeneralVariables& rVariables, const ProcessInfo& rCurrentProcessInfo)
+void UpdatedLagrangianEmbedded::InitializeGeneralVariables (GeneralVariables& rVariables, const ProcessInfo& rCurrentProcessInfo)
 {
     const unsigned int number_of_nodes = GetGeometry().size();
     const unsigned int dimension = GetGeometry().WorkingSpaceDimension();
@@ -165,7 +165,7 @@ void UpdatedLagrangianAxisymmetry::InitializeGeneralVariables (GeneralVariables&
 //*********************************COMPUTE KINEMATICS*********************************
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::CalculateKinematics(GeneralVariables& rVariables, ProcessInfo& rCurrentProcessInfo)
+void UpdatedLagrangianEmbedded::CalculateKinematics(GeneralVariables& rVariables, ProcessInfo& rCurrentProcessInfo)
 {
     KRATOS_TRY
 
@@ -208,7 +208,7 @@ void UpdatedLagrangianAxisymmetry::CalculateKinematics(GeneralVariables& rVariab
 
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::CalculateDeformationMatrix(Matrix& rB,
+void UpdatedLagrangianEmbedded::CalculateDeformationMatrix(Matrix& rB,
         Matrix& rF,
         Matrix& rDN_DX,
         Vector& rN)
@@ -240,7 +240,7 @@ void UpdatedLagrangianAxisymmetry::CalculateDeformationMatrix(Matrix& rB,
 //*************************COMPUTE DEFORMATION GRADIENT*******************************
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::CalculateDeformationGradient(const Matrix& rDN_DX,
+void UpdatedLagrangianEmbedded::CalculateDeformationGradient(const Matrix& rDN_DX,
         Matrix&  rF,
         Matrix&  rDeltaPosition,
         const double & rCurrentRadius,
@@ -277,7 +277,7 @@ void UpdatedLagrangianAxisymmetry::CalculateDeformationGradient(const Matrix& rD
 //************************************************************************************
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::CalculateAndAddKuug(MatrixType& rLeftHandSideMatrix,
+void UpdatedLagrangianEmbedded::CalculateAndAddKuug(MatrixType& rLeftHandSideMatrix,
         GeneralVariables& rVariables,
         const double& rIntegrationWeight)
 {
@@ -319,7 +319,7 @@ void UpdatedLagrangianAxisymmetry::CalculateAndAddKuug(MatrixType& rLeftHandSide
 //*******************************************************************************************
 //*******************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::InitializeSolutionStep( ProcessInfo& rCurrentProcessInfo )
+void UpdatedLagrangianEmbedded::InitializeSolutionStep( ProcessInfo& rCurrentProcessInfo )
 {
     /* NOTE:
     In the InitializeSolutionStep of each time step the nodal initial conditions are evaluated.
@@ -389,7 +389,7 @@ void UpdatedLagrangianAxisymmetry::InitializeSolutionStep( ProcessInfo& rCurrent
 
 //*************************COMPUTE ALMANSI STRAIN*************************************
 //************************************************************************************
-void UpdatedLagrangianAxisymmetry::CalculateAlmansiStrain(const Matrix& rF,
+void UpdatedLagrangianEmbedded::CalculateAlmansiStrain(const Matrix& rF,
     Vector& rStrainVector )
 {
     KRATOS_TRY
@@ -423,7 +423,7 @@ void UpdatedLagrangianAxisymmetry::CalculateAlmansiStrain(const Matrix& rF,
 //*************************COMPUTE GREEN-LAGRANGE STRAIN*************************************
 //************************************************************************************
 // Green-Lagrange Strain: E = 0.5 * (U^2 - I) = 0.5 * (C - I)
-void UpdatedLagrangianAxisymmetry::CalculateGreenLagrangeStrain(const Matrix& rF,
+void UpdatedLagrangianEmbedded::CalculateGreenLagrangeStrain(const Matrix& rF,
     Vector& rStrainVector )
 {
     KRATOS_TRY
@@ -454,7 +454,7 @@ void UpdatedLagrangianAxisymmetry::CalculateGreenLagrangeStrain(const Matrix& rF
 //************************************************************************************
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::EquationIdVector( EquationIdVectorType& rResult, ProcessInfo& CurrentProcessInfo )
+void UpdatedLagrangianEmbedded::EquationIdVector( EquationIdVectorType& rResult, ProcessInfo& CurrentProcessInfo )
 {
     GeometryType& rGeom = GetGeometry();
     const int number_of_nodes = rGeom.size();
@@ -476,7 +476,7 @@ void UpdatedLagrangianAxisymmetry::EquationIdVector( EquationIdVectorType& rResu
 //************************************************************************************
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::GetDofList( DofsVectorType& rElementalDofList, ProcessInfo& CurrentProcessInfo )
+void UpdatedLagrangianEmbedded::GetDofList( DofsVectorType& rElementalDofList, ProcessInfo& CurrentProcessInfo )
 {
     rElementalDofList.resize( 0 );
 
@@ -492,7 +492,7 @@ void UpdatedLagrangianAxisymmetry::GetDofList( DofsVectorType& rElementalDofList
 //************************************************************************************
 
 // Function that return Jacobian matrix
-Matrix& UpdatedLagrangianAxisymmetry::MPMJacobian( Matrix& rResult, const array_1d<double,3>& rPoint)
+Matrix& UpdatedLagrangianEmbedded::MPMJacobian( Matrix& rResult, const array_1d<double,3>& rPoint)
 {
 
     KRATOS_TRY
@@ -542,7 +542,7 @@ Matrix& UpdatedLagrangianAxisymmetry::MPMJacobian( Matrix& rResult, const array_
 * @see DeterminantOfJacobian
 * @see InverseOfJacobian
     */
-Matrix& UpdatedLagrangianAxisymmetry::MPMJacobianDelta( Matrix& rResult, const array_1d<double,3>& rPoint, const Matrix & rDeltaPosition )
+Matrix& UpdatedLagrangianEmbedded::MPMJacobianDelta( Matrix& rResult, const array_1d<double,3>& rPoint, const Matrix & rDeltaPosition )
 {
     KRATOS_TRY
 
@@ -590,7 +590,7 @@ Matrix& UpdatedLagrangianAxisymmetry::MPMJacobianDelta( Matrix& rResult, const a
 * @return Vector of double which is shape function vector \f$ N \f$ in given point.
 *
     */
-Vector& UpdatedLagrangianAxisymmetry::MPMShapeFunctionPointValues( Vector& rResult, const array_1d<double,3>& rPoint )
+Vector& UpdatedLagrangianEmbedded::MPMShapeFunctionPointValues( Vector& rResult, const array_1d<double,3>& rPoint )
 {
     KRATOS_TRY
 
@@ -624,7 +624,7 @@ Vector& UpdatedLagrangianAxisymmetry::MPMShapeFunctionPointValues( Vector& rResu
 }
 
 // Function which return dN/de
-Matrix& UpdatedLagrangianAxisymmetry::MPMShapeFunctionsLocalGradients( Matrix& rResult )
+Matrix& UpdatedLagrangianEmbedded::MPMShapeFunctionsLocalGradients( Matrix& rResult )
 {
     const GeometryType& rGeom = GetGeometry();
     const unsigned int dimension = rGeom.WorkingSpaceDimension();
@@ -662,7 +662,7 @@ Matrix& UpdatedLagrangianAxisymmetry::MPMShapeFunctionsLocalGradients( Matrix& r
 //************************************************************************************
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::GetValuesVector( Vector& values, int Step )
+void UpdatedLagrangianEmbedded::GetValuesVector( Vector& values, int Step )
 {
     GeometryType& rGeom = GetGeometry();
     const unsigned int number_of_nodes = rGeom.size();
@@ -682,7 +682,7 @@ void UpdatedLagrangianAxisymmetry::GetValuesVector( Vector& values, int Step )
 //************************************************************************************
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::GetFirstDerivativesVector( Vector& values, int Step )
+void UpdatedLagrangianEmbedded::GetFirstDerivativesVector( Vector& values, int Step )
 {
     GeometryType& rGeom = GetGeometry();
     const unsigned int number_of_nodes = rGeom.size();
@@ -703,7 +703,7 @@ void UpdatedLagrangianAxisymmetry::GetFirstDerivativesVector( Vector& values, in
 //************************************************************************************
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::GetSecondDerivativesVector( Vector& values, int Step )
+void UpdatedLagrangianEmbedded::GetSecondDerivativesVector( Vector& values, int Step )
 {
     GeometryType& rGeom = GetGeometry();
     const unsigned int number_of_nodes = rGeom.size();
@@ -724,7 +724,7 @@ void UpdatedLagrangianAxisymmetry::GetSecondDerivativesVector( Vector& values, i
 //************************************************************************************
 //************************************************************************************
 
-void UpdatedLagrangianAxisymmetry::save( Serializer& rSerializer ) const
+void UpdatedLagrangianEmbedded::save( Serializer& rSerializer ) const
 {
     KRATOS_SERIALIZE_SAVE_BASE_CLASS( rSerializer, Element )
     rSerializer.save("ConstitutiveLawVector",mConstitutiveLawVector);
@@ -735,7 +735,7 @@ void UpdatedLagrangianAxisymmetry::save( Serializer& rSerializer ) const
 
 }
 
-void UpdatedLagrangianAxisymmetry::load( Serializer& rSerializer )
+void UpdatedLagrangianEmbedded::load( Serializer& rSerializer )
 {
     KRATOS_SERIALIZE_LOAD_BASE_CLASS( rSerializer, Element )
     rSerializer.load("ConstitutiveLawVector",mConstitutiveLawVector);

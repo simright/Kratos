@@ -29,6 +29,7 @@
 #include "custom_elements/updated_lagrangian_UP.hpp"
 #include "custom_elements/updated_lagrangian_quadrilateral.hpp"
 #include "custom_elements/updated_lagrangian_axisymmetry.hpp"
+#include "custom_elements/updated_lagrangian_embedded.hpp"
 
 #include "geometries/triangle_3d_3.h"
 #include "geometries/triangle_2d_3.h"
@@ -54,9 +55,19 @@ namespace Python{
         return Kratos::make_shared<UpdatedLagrangianUP>( 0, Element::GeometryType::Pointer( new Triangle2D3 <Node<3> >( Element::GeometryType::PointsArrayType( 3 ) ) ) );
     }
 
+    Element::Pointer CreateUpdatedLagragianEmbedded2D3N()
+    {
+        return Kratos::make_shared<UpdatedLagrangianEmbedded>( 0, Element::GeometryType::Pointer( new Triangle2D3 <Node<3> >( Element::GeometryType::PointsArrayType( 3 ) ) ) );
+    }
+
     Element::Pointer CreateUpdatedLagragian3D4N()
     {
         return Kratos::make_shared<UpdatedLagrangian>( 0, Element::GeometryType::Pointer( new Tetrahedra3D4 <Node<3> >( Element::GeometryType::PointsArrayType( 4 ) ) ) );
+    }
+
+    Element::Pointer CreateUpdatedLagragianEmbedded3D4N()
+    {
+        return Kratos::make_shared<UpdatedLagrangianEmbedded>( 0, Element::GeometryType::Pointer( new Tetrahedra3D4 <Node<3> >( Element::GeometryType::PointsArrayType( 4 ) ) ) );
     }
 
     // Quadrilateral and Hexahedral 2D and 3D
@@ -96,7 +107,9 @@ namespace Python{
 
         m.def("CreateUpdatedLagragian2D3N", &CreateUpdatedLagragian2D3N);
         m.def("CreateUpdatedLagragianUP2D3N", &CreateUpdatedLagragianUP2D3N);
+        m.def("CreateUpdatedLagragianEmbedded2D3N", &CreateUpdatedLagragianEmbedded2D3N);
         m.def("CreateUpdatedLagragian3D4N", &CreateUpdatedLagragian3D4N);
+        m.def("CreateUpdatedLagragianEmbedded3D4N", &CreateUpdatedLagragianEmbedded3D4N);
         m.def("CreateUpdatedLagragian2D4N", &CreateUpdatedLagragian2D4N);
         m.def("CreateUpdatedLagragian3D8N", &CreateUpdatedLagragian3D8N);
         m.def("CreateUpdatedLagragianAxis2D3N", &CreateUpdatedLagragianAxis2D3N);

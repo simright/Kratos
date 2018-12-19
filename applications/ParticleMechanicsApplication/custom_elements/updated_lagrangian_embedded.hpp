@@ -44,7 +44,7 @@ namespace Kratos
  * This works for arbitrary geometries in 3D and 2D (base class)
  */
 
-class UpdatedLagrangianAxisymmetry
+class UpdatedLagrangianEmbedded
     : public UpdatedLagrangian
 {
 public:
@@ -61,7 +61,7 @@ public:
     typedef GeometryData::IntegrationMethod IntegrationMethod;
 
     /// Counted pointer of LargeDisplacementElement
-    KRATOS_CLASS_POINTER_DEFINITION( UpdatedLagrangianAxisymmetry );
+    KRATOS_CLASS_POINTER_DEFINITION( UpdatedLagrangianEmbedded );
     ///@}
 
     /**
@@ -77,19 +77,19 @@ public:
     ///@{
 
     /// Empty constructor needed for serialization
-    UpdatedLagrangianAxisymmetry();
+    UpdatedLagrangianEmbedded();
 
 
     /// Default constructors
-    UpdatedLagrangianAxisymmetry(IndexType NewId, GeometryType::Pointer pGeometry);
+    UpdatedLagrangianEmbedded(IndexType NewId, GeometryType::Pointer pGeometry);
 
-    UpdatedLagrangianAxisymmetry(IndexType NewId, GeometryType::Pointer pGeometry, PropertiesType::Pointer pProperties);
+    UpdatedLagrangianEmbedded(IndexType NewId, GeometryType::Pointer pGeometry, PropertiesType::Pointer pProperties);
 
     ///Copy constructor
-    UpdatedLagrangianAxisymmetry(UpdatedLagrangianAxisymmetry const& rOther);
+    UpdatedLagrangianEmbedded(UpdatedLagrangianEmbedded const& rOther);
 
     /// Destructor.
-    virtual ~UpdatedLagrangianAxisymmetry();
+    virtual ~UpdatedLagrangianEmbedded();
 
     ///@}
     ///@name Operators
