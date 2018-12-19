@@ -169,10 +169,43 @@ protected:
      */
     virtual void InitializeEmbeddedVariables();
 
+
     /**
      * Initialize Element General Variables
      */
     void InitializeGeneralVariables(GeneralVariables & rVariables, const ProcessInfo& rCurrentProcessInfo) override;
+
+
+    /**
+     * Calculate Modified Jacobian in a given point considering cut element
+     */
+    virtual Matrix& MPMModifiedJacobian(Matrix& rResult, const array_1d<double,3>& rPoint);
+
+    /**
+     * Modified Jacobian in given point and given a delta position.
+     * This method calculate jacobian matrix in given point and a given delta position.
+     *
+     * @param rPoint point which jacobians has to be calculated in it.
+     * @return Matrix of double which is jacobian matrix \f$ J \f$ in given point and a given delta position.
+     *
+     * @see DeterminantOfJacobian
+     * @see InverseOfJacobian
+     */
+    virtual Matrix& MPMModifiedJacobianDelta(Matrix& rResult, const array_1d<double,3>& rPoint, const Matrix& rDeltaPosition);
+
+    /**
+     * Modified Shape function values in given point.
+     * This method calculate the shape function vector in given point.
+     *
+     * @param rPoint point which shape function values have to be calculated in it.
+     * @return Vector of double which is shape function vector \f$ N \f$ in given point.
+     */
+    virtual Vector& MPMModifiedShapeFunctionPointValues(Vector& rResult, const array_1d<double,3>& rPoint);
+
+    /**
+     * Calculate Modified Shape Function gradient local Values in a given point in 3 dimension
+     */
+    virtual Matrix& MPMModifiedShapeFunctionsLocalGradients(Matrix& rResult);
 
 
     /**

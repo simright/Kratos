@@ -203,6 +203,8 @@ void UpdatedLagrangianEmbedded::InitializeGeneralVariables (GeneralVariables& rV
 {
     if (!this->IsCut()){
         UpdatedLagrangian::InitializeGeneralVariables(rVariables, rCurrentProcessInfo);
+        mNumPositiveNodes = GetGeometry().size();
+        mNumNegativeNodes = 0;
     }
     else{
         const unsigned int number_of_nodes = GetGeometry().size();
@@ -210,9 +212,8 @@ void UpdatedLagrangianEmbedded::InitializeGeneralVariables (GeneralVariables& rV
         unsigned int voigtsize  = 3;
 
         if( dimension == 3 )
-        {
             voigtsize  = 6;
-        }
+
         rVariables.detF  = 1;
 
         rVariables.detF0 = 1;
@@ -240,20 +241,198 @@ void UpdatedLagrangianEmbedded::InitializeGeneralVariables (GeneralVariables& rV
 
         const array_1d<double,3>& xg = this->GetValue(MP_COORD);
 
-        rVariables.N = this->MPMShapeFunctionPointValues(rVariables.N, xg);
+        rVariables.N = this->MPMModifiedShapeFunctionPointValues(rVariables.N, xg);
 
         // Reading shape functions local gradients
-        rVariables.DN_De = this->MPMShapeFunctionsLocalGradients( rVariables.DN_De);
+        rVariables.DN_De = this->MPMModifiedShapeFunctionsLocalGradients( rVariables.DN_De);
 
         // CurrentDisp is the unknown variable. It represents the nodal delta displacement. When it is predicted is equal to zero.
         rVariables.CurrentDisp = CalculateCurrentDisp(rVariables.CurrentDisp, rCurrentProcessInfo);
 
         // Calculating the current jacobian from cartesian coordinates to parent coordinates for the MP element [dx_n+1/d£]
-        rVariables.j = this->MPMJacobianDelta( rVariables.j, xg, rVariables.CurrentDisp);
+        rVariables.j = this->MPMModifiedJacobianDelta( rVariables.j, xg, rVariables.CurrentDisp);
 
         // Calculating the reference jacobian from cartesian coordinates to parent coordinates for the MP element [dx_n/d£]
-        rVariables.J = this->MPMJacobian( rVariables.J, xg);
+        rVariables.J = this->MPMModifiedJacobian( rVariables.J, xg);
     }
+}
+
+
+//************************************************************************************
+//************************************************************************************
+
+// Function which return modified shape function N*
+Vector& UpdatedLagrangianEmbedded::MPMModifiedShapeFunctionPointValues( Vector& rResult, const array_1d<double,3>& rPoint )
+{
+    KRATOS_TRY
+
+    const unsigned int dimension = GetGeometry().WorkingSpaceDimension();
+
+    if (dimension == 2)
+    {
+        rResult.resize(3, false);
+        array_1d<double,3> rPointLocal = ZeroVector(3);
+
+        // 1. Obtain the local coordinate of rPoint
+        rPointLocal = GetGeometry().PointLocalCoordinates(rPointLocal, rPoint);
+
+        // 2. Get Shape functions: N
+        rResult[0] = 1 - rPointLocal[0] - rPointLocal[1] ;
+        rResult[1] = rPointLocal[0] ;
+        rResult[2] = rPointLocal[1];
+    }
+    else if (dimension == 3)
+    {
+        rResult.resize(4, false);
+        array_1d<double,3> rPointLocal = ZeroVector(3);
+
+        // 1. Obtain the local coordinate of rPoint
+        rPointLocal = GetGeometry().PointLocalCoordinates(rPointLocal, rPoint);
+
+        // 2. Get Shape functions: N
+        rResult[0] =  1.0-(rPointLocal[0]+rPointLocal[1]+rPointLocal[2]) ;
+        rResult[1] = rPointLocal[0] ;
+        rResult[2] = rPointLocal[1];
+        rResult[3] = rPointLocal[2];
+    }
+
+    return rResult;
+
+    KRATOS_CATCH( "" )
+}
+
+// Function which return modified shape function gradient (dN/de)*
+Matrix& UpdatedLagrangianEmbedded::MPMModifiedShapeFunctionsLocalGradients( Matrix& rResult )
+{
+    unsigned int dimension = GetGeometry().WorkingSpaceDimension();
+    if (dimension == 2)
+    {
+        rResult = ZeroMatrix(3,2);
+        rResult( 0, 0 ) = -1.0;
+        rResult( 0, 1 ) = -1.0;
+        rResult( 1, 0 ) =  1.0;
+        rResult( 1, 1 ) =  0.0;
+        rResult( 2, 0 ) =  0.0;
+        rResult( 2, 1 ) =  1.0;
+    }
+    else if(dimension == 3)
+    {
+        rResult = ZeroMatrix(4,3);
+        rResult(0,0) = -1.0;
+        rResult(0,1) = -1.0;
+        rResult(0,2) = -1.0;
+        rResult(1,0) =  1.0;
+        rResult(1,1) =  0.0;
+        rResult(1,2) =  0.0;
+        rResult(2,0) =  0.0;
+        rResult(2,1) =  1.0;
+        rResult(2,2) =  0.0;
+        rResult(3,0) =  0.0;
+        rResult(3,1) =  0.0;
+        rResult(3,2) =  1.0;
+    }
+
+    return rResult;
+}
+
+// Function that return modified Jacobian delta j*
+Matrix& UpdatedLagrangianEmbedded::MPMModifiedJacobianDelta( Matrix& rResult, const array_1d<double,3>& rPoint, const Matrix & rDeltaPosition )
+{
+    KRATOS_TRY
+
+    // Derivatives of shape functions
+    Matrix shape_functions_gradients;
+    shape_functions_gradients = this->MPMModifiedShapeFunctionsLocalGradients(
+                                    shape_functions_gradients );
+
+    const GeometryType& rGeom = GetGeometry();
+    const unsigned int dimension = rGeom.WorkingSpaceDimension();
+
+    if (dimension == 2)
+    {
+        rResult.resize( 2, 2, false );
+        rResult = ZeroMatrix(2,2);
+
+        for ( unsigned int i = 0; i < rGeom.size(); i++ )
+        {
+            rResult( 0, 0 ) += ( rGeom.GetPoint( i ).X() + rDeltaPosition(i,0)) * ( shape_functions_gradients( i, 0 ) );
+            rResult( 0, 1 ) += ( rGeom.GetPoint( i ).X() + rDeltaPosition(i,0)) * ( shape_functions_gradients( i, 1 ) );
+            rResult( 1, 0 ) += ( rGeom.GetPoint( i ).Y() + rDeltaPosition(i,1)) * ( shape_functions_gradients( i, 0 ) );
+            rResult( 1, 1 ) += ( rGeom.GetPoint( i ).Y() + rDeltaPosition(i,1)) * ( shape_functions_gradients( i, 1 ) );
+        }
+    }
+    else if(dimension == 3)
+    {
+        rResult.resize( 3, 3, false );
+        rResult = ZeroMatrix(3,3);
+        for ( unsigned int i = 0; i < rGeom.size(); i++ )
+        {
+            rResult( 0, 0 ) += ( rGeom.GetPoint( i ).X() + rDeltaPosition(i,0)) * ( shape_functions_gradients( i, 0 ) );
+            rResult( 0, 1 ) += ( rGeom.GetPoint( i ).X() + rDeltaPosition(i,0)) * ( shape_functions_gradients( i, 1 ) );
+            rResult( 0, 2 ) += ( rGeom.GetPoint( i ).X() + rDeltaPosition(i,0)) * ( shape_functions_gradients( i, 2 ) );
+            rResult( 1, 0 ) += ( rGeom.GetPoint( i ).Y() + rDeltaPosition(i,1)) * ( shape_functions_gradients( i, 0 ) );
+            rResult( 1, 1 ) += ( rGeom.GetPoint( i ).Y() + rDeltaPosition(i,1)) * ( shape_functions_gradients( i, 1 ) );
+            rResult( 1, 2 ) += ( rGeom.GetPoint( i ).Y() + rDeltaPosition(i,1)) * ( shape_functions_gradients( i, 2 ) );
+            rResult( 2, 0 ) += ( rGeom.GetPoint( i ).Z() + rDeltaPosition(i,2)) * ( shape_functions_gradients( i, 0 ) );
+            rResult( 2, 1 ) += ( rGeom.GetPoint( i ).Z() + rDeltaPosition(i,2)) * ( shape_functions_gradients( i, 1 ) );
+            rResult( 2, 2 ) += ( rGeom.GetPoint( i ).Z() + rDeltaPosition(i,2)) * ( shape_functions_gradients( i, 2 ) );
+        }
+    }
+
+    return rResult;
+
+    KRATOS_CATCH( "" )
+}
+
+// Function that return modified Jacobian matrix*
+Matrix& UpdatedLagrangianEmbedded::MPMModifiedJacobian( Matrix& rResult, const array_1d<double,3>& rPoint)
+{
+    KRATOS_TRY
+
+    // Derivatives of shape functions
+    Matrix shape_functions_gradients;
+    shape_functions_gradients =this->MPMShapeFunctionsLocalGradients(
+                                   shape_functions_gradients);
+
+    const GeometryType& rGeom = GetGeometry();
+    const unsigned int number_nodes = rGeom.PointsNumber();
+    const unsigned int dimension = rGeom.WorkingSpaceDimension();
+
+    if (dimension ==2)
+    {
+        rResult.resize( 2, 2, false );
+        rResult = ZeroMatrix(2,2);
+
+        for ( unsigned int i = 0; i < number_nodes; i++ )
+        {
+            rResult( 0, 0 ) += ( rGeom.GetPoint( i ).X() *  shape_functions_gradients( i, 0 ) );
+            rResult( 0, 1 ) += ( rGeom.GetPoint( i ).X() *  shape_functions_gradients( i, 1 ) );
+            rResult( 1, 0 ) += ( rGeom.GetPoint( i ).Y() *  shape_functions_gradients( i, 0 ) );
+            rResult( 1, 1 ) += ( rGeom.GetPoint( i ).Y() *  shape_functions_gradients( i, 1 ) );
+        }
+    }
+    else if(dimension ==3)
+    {
+        rResult.resize( 3, 3, false );
+        rResult = ZeroMatrix(3,3);
+
+        for ( unsigned int i = 0; i < number_nodes; i++ )
+        {
+            rResult( 0, 0 ) += ( rGeom.GetPoint( i ).X() *  shape_functions_gradients( i, 0 ) );
+            rResult( 0, 1 ) += ( rGeom.GetPoint( i ).X() *  shape_functions_gradients( i, 1 ) );
+            rResult( 0, 2 ) += ( rGeom.GetPoint( i ).X() *  shape_functions_gradients( i, 2 ) );
+            rResult( 1, 0 ) += ( rGeom.GetPoint( i ).Y() *  shape_functions_gradients( i, 0 ) );
+            rResult( 1, 1 ) += ( rGeom.GetPoint( i ).Y() *  shape_functions_gradients( i, 1 ) );
+            rResult( 1, 2 ) += ( rGeom.GetPoint( i ).Y() *  shape_functions_gradients( i, 2 ) );
+            rResult( 2, 0 ) += ( rGeom.GetPoint( i ).Z() *  shape_functions_gradients( i, 0 ) );
+            rResult( 2, 1 ) += ( rGeom.GetPoint( i ).Z() *  shape_functions_gradients( i, 1 ) );
+            rResult( 2, 2 ) += ( rGeom.GetPoint( i ).Z() *  shape_functions_gradients( i, 2 ) );
+        }
+    }
+
+    return rResult;
+
+    KRATOS_CATCH( "" )
 }
 
 //************************************************************************************
