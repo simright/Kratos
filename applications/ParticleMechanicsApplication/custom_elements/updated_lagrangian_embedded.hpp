@@ -106,7 +106,9 @@ public:
      * @param pProperties: the properties assigned to the new element
      * @return a Pointer to the new element
      */
-    Element::Pointer Create(IndexType NewId, NodesArrayType const& ThisNodes, PropertiesType::Pointer pProperties) const override;
+    Element::Pointer Create(IndexType NewId,
+                            NodesArrayType const& ThisNodes,
+                            PropertiesType::Pointer pProperties) const override;
 
     /**
      * clones the selected element variables, creating a new one
@@ -115,40 +117,20 @@ public:
      * @param pProperties: the properties assigned to the new element
      * @return a Pointer to the new element
      */
-    Element::Pointer Clone(IndexType NewId, NodesArrayType const& ThisNodes) const override;
-
-
-    //************* GETTING METHODS
+    Element::Pointer Clone(IndexType NewId,
+                            NodesArrayType const& ThisNodes) const override;
 
     /**
-     * Sets on rElementalDofList the degrees of freedom of the considered element geometry
+     * Computes the LHS and RHS elemental matrices. If the element is split
+     * includes the contribution of the level set boundary condition imposition.
+     * @param rLeftHandSideMatrix reference to the LHS matrix
+     * @param rRightHandSideVector reference to the RHS vector
+     * @param rCurrentProcessInfo reference to the ProcessInfo
      */
-    void GetDofList(DofsVectorType& rElementalDofList, ProcessInfo& rCurrentProcessInfo) override;
 
-    /**
-     * Sets on rResult the ID's of the element degrees of freedom
-     */
-    void EquationIdVector(EquationIdVectorType& rResult, ProcessInfo& rCurrentProcessInfo) override;
-
-    /**
-     * Sets on rValues the nodal displacements
-     */
-    void GetValuesVector(Vector& rValues, int Step = 0) override;
-
-    /**
-     * Sets on rValues the nodal velocities
-     */
-    void GetFirstDerivativesVector(Vector& rValues, int Step = 0) override;
-
-    /**
-     * Sets on rValues the nodal accelerations
-     */
-    void GetSecondDerivativesVector(Vector& rValues, int Step = 0) override;
-
-    /**
-     * Called at the beginning of each solution step
-     */
-    void InitializeSolutionStep(ProcessInfo& rCurrentProcessInfo) override;
+    void CalculateLocalSystem(MatrixType& rLeftHandSideMatrix,
+                              VectorType& rRightHandSideVector,
+                              ProcessInfo& rCurrentProcessInfo) override;
 
     ///@}
     ///@name Access
@@ -179,86 +161,6 @@ protected:
     ///@}
     ///@name Protected Operations
     ///@{
-
-    /**
-     * Calculation of the Geometric Stiffness Matrix. Kuug = BT * S
-     */
-    void CalculateAndAddKuug(MatrixType& rLeftHandSideMatrix,
-                                     GeneralVariables& rVariables,
-                                     const double& rIntegrationWeight) override;
-
-    /**
-     * Clear Nodal Forces
-     */
-    void ClearNodalForces ();
-    /**
-     * Clear Nodal Displacement Velocity and Acceleration
-     */
-
-    /**
-     * Calculate Element Kinematics
-     */
-    void CalculateKinematics(GeneralVariables& rVariables, ProcessInfo& rCurrentProcessInfo) override;
-
-     /**
-     * Initialize Element General Variables
-     */
-    void Initialize() override;
-
-    /**
-     * Initialize Element General Variables
-     */
-    void InitializeGeneralVariables(GeneralVariables & rVariables, const ProcessInfo& rCurrentProcessInfo) override;
-
-    /**
-     * Calculation of the Green Lagrange Strain Vector
-     */
-    void CalculateGreenLagrangeStrain(const Matrix& rF,
-            Vector& rStrainVector) override;
-
-    /**
-     * Calculation of the Almansi Strain Vector
-     */
-    void CalculateAlmansiStrain(const Matrix& rF, Vector& rStrainVector) override;
-
-
-    /**
-     * Calculation of the Deformation Matrix  BL
-     */
-    virtual void CalculateDeformationMatrix(Matrix& rB,
-                                            Matrix& rF,
-                                            Matrix& rDN_DX,
-                                            Vector& rN);
-
-    /**
-     * Calculate Jacobian in a given point
-     */
-    Matrix& MPMJacobian(Matrix& rResult, const array_1d<double,3>& rPoint) override;
-
-    /**
-     * Calculate Jacobian in a given point and given a delta position
-     */
-    Matrix& MPMJacobianDelta(Matrix& rResult, const array_1d<double,3>& rPoint, const Matrix& rDeltaPosition) override;
-
-    /**
-     * Calculate Shape Function Values in a given point
-     */
-
-    Vector& MPMShapeFunctionPointValues(Vector& rResult, const array_1d<double,3>& rPoint) override;
-
-    /**
-     * Calculate Shape Function grandient local Values in a given point in 3 dimension
-     */
-    Matrix& MPMShapeFunctionsLocalGradients(Matrix& rResult) override;
-
-    /**
-     * Calculation of the Deformation Gradient F
-     */
-    virtual void CalculateDeformationGradient(const Matrix& rDN_DX,
-                                      Matrix& rF,
-                                      Matrix& rDeltaPosition,
-                                      const double & rCurrentRadius,
-                                      const double & rReferenceRadius);
 
     ///@}
     ///@name Protected  Access
