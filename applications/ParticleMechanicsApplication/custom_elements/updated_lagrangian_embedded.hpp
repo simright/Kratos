@@ -120,18 +120,6 @@ public:
     Element::Pointer Clone(IndexType NewId,
                             NodesArrayType const& ThisNodes) const override;
 
-    /**
-     * Computes the LHS and RHS elemental matrices. If the element is split
-     * includes the contribution of the level set boundary condition imposition.
-     * @param rLeftHandSideMatrix reference to the LHS matrix
-     * @param rRightHandSideVector reference to the RHS vector
-     * @param rCurrentProcessInfo reference to the ProcessInfo
-     */
-
-    void CalculateLocalSystem(MatrixType& rLeftHandSideMatrix,
-                              VectorType& rRightHandSideVector,
-                              ProcessInfo& rCurrentProcessInfo) override;
-
     ///@}
     ///@name Access
     ///@{
@@ -154,9 +142,45 @@ protected:
     ///@name Protected member Variables
     ///@{
 
+    bool mIsSlip;
+    std::size_t mNumPositiveNodes;
+    std::size_t mNumNegativeNodes;
+
+    std::vector< size_t > mPositiveIndices;
+    std::vector< size_t > mNegativeIndices;
+
+    Vector mDistance;
+
     ///@}
     ///@name Protected Operators
     ///@{
+
+    /**
+     * Calculates the elemental contributions
+     * \f$ K^e = w\,B^T\,D\,B \f$ and
+     * \f$ r^e \f$
+     */
+    void CalculateElementalSystem(LocalSystemComponents& rLocalSystem,
+                                ProcessInfo& rCurrentProcessInfo) override;
+
+
+    /**
+     * Function to identify whether element is embedded or not and initialize necessary variables
+     */
+    virtual void InitializeEmbeddedVariables();
+
+    /**
+     * Initialize Element General Variables
+     */
+    void InitializeGeneralVariables(GeneralVariables & rVariables, const ProcessInfo& rCurrentProcessInfo) override;
+
+
+    /**
+     * Returns true if there is any cut in the element
+     */
+    bool IsCut() {
+        return ((mNumPositiveNodes > 0) && (mNumNegativeNodes > 0));
+    }
 
     ///@}
     ///@name Protected Operations
