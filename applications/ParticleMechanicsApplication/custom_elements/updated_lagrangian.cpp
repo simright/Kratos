@@ -1606,7 +1606,6 @@ Vector& UpdatedLagrangian::MPMShapeFunctionPointValues( Vector& rResult, const a
     KRATOS_TRY
 
     const unsigned int dimension = GetGeometry().WorkingSpaceDimension();
-    Vector rPointLocal = ZeroVector(dimension);
 
     if (dimension == 2)
     {
