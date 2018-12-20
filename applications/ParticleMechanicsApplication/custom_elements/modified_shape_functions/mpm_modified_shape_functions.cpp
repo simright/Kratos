@@ -74,37 +74,37 @@ namespace Kratos
         Matrix& rIntPointCondMatrix,
         const std::vector<int>& rEdgeNodeI,
         const std::vector<int>& rEdgeNodeJ,
-        const std::vector<int>& rSplitEdges) {
+        const std::vector<int>& rSplitEdges)
+    {
+        const unsigned int nedges = mpInputGeometry->EdgesNumber();
+        const unsigned int nnodes = mpInputGeometry->PointsNumber();
 
-        // const unsigned int nedges = mpInputGeometry->EdgesNumber();
-        // const unsigned int nnodes = mpInputGeometry->PointsNumber();
+        // Initialize intersection points condensation matrix
+        rIntPointCondMatrix = ZeroMatrix(nnodes + nedges, nnodes);
 
-        // // Initialize intersection points condensation matrix
-        // rIntPointCondMatrix = ZeroMatrix(nnodes + nedges, nnodes);
+        // Fill the original geometry points main diagonal
+        for (unsigned int i = 0; i < nnodes; ++i) {
+            rIntPointCondMatrix(i,i) = 1.0;
+        }
 
-        // // Fill the original geometry points main diagonal
-        // for (unsigned int i = 0; i < nnodes; ++i) {
-        //     rIntPointCondMatrix(i,i) = 1.0;
-        // }
+        // Compute the intersection points contributions
+        unsigned int row = nnodes;
+        for (unsigned int idedge = 0; idedge < nedges; ++idedge) {
+            // Check if the edge has an intersection point
+            if (rSplitEdges[nnodes+idedge] != -1) {
+                // Get the nodes that compose the edge
+                const unsigned int edge_node_i = rEdgeNodeI[idedge];
+                const unsigned int edge_node_j = rEdgeNodeJ[idedge];
 
-        // // Compute the intersection points contributions
-        // unsigned int row = nnodes;
-        // for (unsigned int idedge = 0; idedge < nedges; ++idedge) {
-        //     // Check if the edge has an intersection point
-        //     if (rSplitEdges[nnodes+idedge] != -1) {
-        //         // Get the nodes that compose the edge
-        //         const unsigned int edge_node_i = rEdgeNodeI[idedge];
-        //         const unsigned int edge_node_j = rEdgeNodeJ[idedge];
+                // Compute the relative coordinate of the intersection point over the edge
+                const double aux_node_rel_location = std::abs (mNodalDistances(edge_node_i)/(mNodalDistances(edge_node_j)-mNodalDistances(edge_node_i)));
 
-        //         // Compute the relative coordinate of the intersection point over the edge
-        //         const double aux_node_rel_location = std::abs (mNodalDistances(edge_node_i)/(mNodalDistances(edge_node_j)-mNodalDistances(edge_node_i)));
-
-        //         // Store the relative coordinate values as the original geometry nodes sh. function value in the intersections
-        //         rIntPointCondMatrix(row, edge_node_i) = 1.0 - aux_node_rel_location;
-        //         rIntPointCondMatrix(row, edge_node_j) = aux_node_rel_location;
-        //     }
-        //     row++;
-        // }
+                // Store the relative coordinate values as the original geometry nodes sh. function value in the intersections
+                rIntPointCondMatrix(row, edge_node_i) = 1.0 - aux_node_rel_location;
+                rIntPointCondMatrix(row, edge_node_j) = aux_node_rel_location;
+            }
+            row++;
+        }
     }
 
     // Given the subdivision pattern of either the positive or negative side, computes the shape function values.
@@ -123,22 +123,16 @@ namespace Kratos
         // const unsigned int split_edges_size = n_edges_global + n_nodes_global;     // Split edges vector size
 
         // const unsigned int n_subdivision = rSubdivisionsVector.size();                                         // Number of positive or negative subdivisions
-        // const unsigned int n_dim = (*rSubdivisionsVector[0]).Dimension();                                      // Number of dimensions
+        // const unsigned int n_dim   = (*rSubdivisionsVector[0]).Dimension();                                    // Number of dimensions
         // const unsigned int n_nodes = (*rSubdivisionsVector[0]).PointsNumber();                                 // Number of nodes per subdivision
-        // const unsigned int n_int_pts = (*rSubdivisionsVector[0]).IntegrationPointsNumber(IntegrationMethod);   // Number of Gauss pts. per subdivision
 
-        // // Resize the shape function values matrix
-        // const unsigned int n_total_int_pts = n_subdivision * n_int_pts;
+        // // For MPM the total number of integration point is always one and it is defined by rIntegrationPoint
+        // const unsigned int n_total_int_pts = 1;
 
         // if (rShapeFunctionsValues.size1() != n_total_int_pts) {
         //     rShapeFunctionsValues.resize(n_total_int_pts, n_nodes, false);
         // } else if (rShapeFunctionsValues.size2() != n_nodes) {
         //     rShapeFunctionsValues.resize(n_total_int_pts, n_nodes, false);
-        // }
-
-        // // Resize the weights vector
-        // if (rWeightsValues.size() != n_total_int_pts) {
-        //     rWeightsValues.resize(n_total_int_pts, false);
         // }
 
         // // Resize the shape function gradients vector
@@ -165,9 +159,6 @@ namespace Kratos
 
         //     // Apply the original nodes condensation
         //     for (unsigned int i_gauss = 0; i_gauss < n_int_pts; ++i_gauss) {
-
-        //         // Store the Gauss pts. weights values
-        //         rWeightsValues(i_subdivision*n_int_pts + i_gauss) = subdivision_jacobians_values(i_gauss) * subdivision_gauss_points[i_gauss].Weight();
 
         //         // Condense the shape function local values to obtain the original nodes ones
         //         Vector sh_func_vect = ZeroVector(split_edges_size);
