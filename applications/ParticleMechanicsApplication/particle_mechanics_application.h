@@ -7,7 +7,7 @@
 //  License:		 BSD License
 //					 Kratos default license: kratos/license.txt
 //
-//  Main authors:    Ilaria Iaconeta, Bodhinanda Chandra
+//  Main authors:    Ilaria Iaconeta, Bodhinanda Chandra, Veronika Singer
 //
 //
 
@@ -40,6 +40,8 @@
 #include "custom_conditions/grid_based_conditions/mpm_grid_line_load_condition_2d.h"
 #include "custom_conditions/grid_based_conditions/mpm_grid_axisym_line_load_condition_2d.h"
 #include "custom_conditions/grid_based_conditions/mpm_grid_surface_load_condition_3d.h"
+#include "custom_conditions/particle_based_conditions/mpm_particle_base_load_condition.h"
+#include "custom_conditions/particle_based_conditions/mpm_particle_point_load_condition.h"
 
 //---element
 #include "custom_elements/updated_lagrangian.hpp"
@@ -238,6 +240,10 @@ private:
     const MPMGridAxisymLineLoadCondition2D mMPMGridAxisymLineLoadCondition2D2N;
     const MPMGridSurfaceLoadCondition3D mMPMGridSurfaceLoadCondition3D3N;
     const MPMGridSurfaceLoadCondition3D mMPMGridSurfaceLoadCondition3D4N;
+    const MPMParticlePointLoadCondition mMPMParticlePointLoadCondition2D3N;
+    const MPMParticlePointLoadCondition mMPMParticlePointLoadCondition3D4N;
+    const MPMParticlePointLoadCondition mMPMParticlePointLoadCondition2D4N;
+    const MPMParticlePointLoadCondition mMPMParticlePointLoadCondition3D8N;
 
     // Constitutive laws
     // CL: Linear Elastic laws
