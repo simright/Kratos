@@ -391,7 +391,7 @@ Matrix& UpdatedLagrangianEmbedded::MPMModifiedJacobian( Matrix& rResult, const a
 
     // Derivatives of shape functions
     Matrix shape_functions_gradients;
-    shape_functions_gradients =this->MPMShapeFunctionsLocalGradients(
+    shape_functions_gradients =this->MPMModifiedShapeFunctionsLocalGradients(
                                    shape_functions_gradients);
 
     const GeometryType& rGeom = GetGeometry();
