@@ -81,9 +81,9 @@ namespace Kratos
         const GeometryType& rGeom = GetGeometry();
         const unsigned int number_of_nodes = GetGeometry().size();
         const unsigned int dimension = GetGeometry().WorkingSpaceDimension();
-        
 
-        const array_1d<double,3>& xg = this->GetValue(POINTLOAD_COORD);
+
+        const array_1d<double,3>& xg = this->GetValue(MPC_COORD);
 
         rVariables.N = this->MPMShapeFunctionPointValues(rVariables.N, xg);
 
@@ -128,7 +128,7 @@ namespace Kratos
         const unsigned int number_of_nodes = GetGeometry().PointsNumber();
         const unsigned int dimension = GetGeometry().WorkingSpaceDimension();
 
-        const array_1d<double,3> & xg = this->GetValue(POINT_LOAD_COORD);
+        const array_1d<double,3> & xg = this->GetValue(MPC_COORD);
 
         array_1d<double,3> delta_xg = ZeroVector(3);
 
@@ -141,14 +141,14 @@ namespace Kratos
                 for ( unsigned int j = 0; j < dimension; j++ )
                 {
                     delta_xg[j] += rVariables.N[i] * rVariables.CurrentDisp(i,j);
-                    
+
                 }
             }
         }
 
-        // Update the POINT_LOAD Position
+        // Update the Material Point Condition Position
         const array_1d<double,3>& new_xg = xg + delta_xg ;
-        this -> SetValue(POINT_LOAD_COORD,new_xg);
+        this -> SetValue(MPC_COORD,new_xg);
 
         KRATOS_CATCH( "" )
     }
@@ -284,7 +284,7 @@ namespace Kratos
             if (NumberOfNodes == 4)
             {
                 rResult.resize(4, false);
-                
+
                 rResult[0] =  1.0-(rPointLocal[0]+rPointLocal[1]+rPointLocal[2]) ;
                 rResult[1] = rPointLocal[0] ;
                 rResult[2] = rPointLocal[1];
