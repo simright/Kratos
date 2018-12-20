@@ -15,15 +15,15 @@
 // External includes
 
 // Project includes
-#include "modified_shape_functions/tetrahedra_3d_4_modified_shape_functions.h"
+#include "custom_elements/modified_shape_functions/mpm_tetrahedra_3d_4_modified_shape_functions.h"
 
 namespace Kratos
 {
 
-/// Tetrahedra3D4ModifiedShapeFunctions implementation
+/// MPMTetrahedra3D4ModifiedShapeFunctions implementation
 /// Default constructor
-Tetrahedra3D4ModifiedShapeFunctions::Tetrahedra3D4ModifiedShapeFunctions(const GeometryPointerType pInputGeometry, const Vector& rNodalDistances) :
-    ModifiedShapeFunctions(pInputGeometry, rNodalDistances),
+MPMTetrahedra3D4ModifiedShapeFunctions::MPMTetrahedra3D4ModifiedShapeFunctions(const GeometryPointerType pInputGeometry, const Vector& rNodalDistances) :
+    MPMModifiedShapeFunctions(pInputGeometry, rNodalDistances),
     mpTetrahedraSplitter(Kratos::make_shared<DivideTetrahedra3D4>(*pInputGeometry, rNodalDistances)) {
 
     // Perform the element splitting
@@ -32,20 +32,20 @@ Tetrahedra3D4ModifiedShapeFunctions::Tetrahedra3D4ModifiedShapeFunctions(const G
 };
 
 /// Destructor
-Tetrahedra3D4ModifiedShapeFunctions::~Tetrahedra3D4ModifiedShapeFunctions() {};
+MPMTetrahedra3D4ModifiedShapeFunctions::~MPMTetrahedra3D4ModifiedShapeFunctions() {};
 
 /// Turn back information as a string.
-std::string Tetrahedra3D4ModifiedShapeFunctions::Info() const {
+std::string MPMTetrahedra3D4ModifiedShapeFunctions::Info() const {
     return "Tetrahedra3D4N modified shape functions computation class.";
 };
 
 /// Print information about this object.
-void Tetrahedra3D4ModifiedShapeFunctions::PrintInfo(std::ostream& rOStream) const {
+void MPMTetrahedra3D4ModifiedShapeFunctions::PrintInfo(std::ostream& rOStream) const {
     rOStream << "Tetrahedra3D4N modified shape functions computation class.";
 };
 
 /// Print object's data.
-void Tetrahedra3D4ModifiedShapeFunctions::PrintData(std::ostream& rOStream) const {
+void MPMTetrahedra3D4ModifiedShapeFunctions::PrintData(std::ostream& rOStream) const {
     const GeometryPointerType p_geometry = this->GetInputGeometry();
     const Vector nodal_distances = this->GetNodalDistances();
     rOStream << "Tetrahedra3D4N modified shape functions computation class:\n";
@@ -60,21 +60,21 @@ void Tetrahedra3D4ModifiedShapeFunctions::PrintData(std::ostream& rOStream) cons
 };
 
 // Returns a pointer to the splitting utility
-const DivideGeometry::Pointer Tetrahedra3D4ModifiedShapeFunctions::pGetSplittingUtil() const {
+const DivideGeometry::Pointer MPMTetrahedra3D4ModifiedShapeFunctions::pGetSplittingUtil() const {
     return mpTetrahedraSplitter;
 };
 
 // Returns true if the element is splitting
-bool Tetrahedra3D4ModifiedShapeFunctions::IsSplit() {
+bool MPMTetrahedra3D4ModifiedShapeFunctions::IsSplit() {
     return mpTetrahedraSplitter->mIsSplit;
 };
 
 // Internally computes the splitting pattern and returns all the shape function values for the positive side.
-void Tetrahedra3D4ModifiedShapeFunctions::ComputePositiveSideShapeFunctionsAndGradientsValues(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputePositiveSideShapeFunctionsAndGradientsValues(
     Matrix &rPositiveSideShapeFunctionsValues,
     ShapeFunctionsGradientsType &rPositiveSideShapeFunctionsGradientsValues,
     Vector &rPositiveSideWeightsValues,
-    const IntegrationMethodType IntegrationMethod) {
+    const array_1d<double,3>& rIntegrationPoint) {
 
     if (this->IsSplit()) {
         // Get the intersection points condensation matrix
@@ -90,18 +90,18 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputePositiveSideShapeFunctionsAndGr
                                      rPositiveSideWeightsValues,
                                      mpTetrahedraSplitter->mPositiveSubdivisions,
                                      p_matrix,
-                                     IntegrationMethod);
+                                     rIntegrationPoint);
     } else {
         KRATOS_ERROR << "Using the ComputePositiveSideShapeFunctionsAndGradientsValues method for a non divided geometry.";
     }
 };
 
 // Internally computes the splitting pattern and returns all the shape function values for the negative side.
-void Tetrahedra3D4ModifiedShapeFunctions::ComputeNegativeSideShapeFunctionsAndGradientsValues(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputeNegativeSideShapeFunctionsAndGradientsValues(
     Matrix &rNegativeSideShapeFunctionsValues,
     ShapeFunctionsGradientsType &rNegativeSideShapeFunctionsGradientsValues,
     Vector &rNegativeSideWeightsValues,
-    const IntegrationMethodType IntegrationMethod) {
+    const array_1d<double,3>& rIntegrationPoint) {
 
     if (this->IsSplit()) {
         // Get the intersection points condensation matrix
@@ -117,18 +117,18 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputeNegativeSideShapeFunctionsAndGr
                                      rNegativeSideWeightsValues,
                                      mpTetrahedraSplitter->mNegativeSubdivisions,
                                      p_matrix,
-                                     IntegrationMethod);
+                                     rIntegrationPoint);
     } else {
         KRATOS_ERROR << "Using the ComputeNegativeSideShapeFunctionsAndGradientsValues method for a non divided geometry.";
     }
 };
 
 // Internally computes the splitting pattern and returns all the shape function values for the positive interface side.
-void Tetrahedra3D4ModifiedShapeFunctions::ComputeInterfacePositiveSideShapeFunctionsAndGradientsValues(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputeInterfacePositiveSideShapeFunctionsAndGradientsValues(
     Matrix &rInterfacePositiveSideShapeFunctionsValues,
     ShapeFunctionsGradientsType &rInterfacePositiveSideShapeFunctionsGradientsValues,
     Vector &rInterfacePositiveSideWeightsValues,
-    const IntegrationMethodType IntegrationMethod) {
+    const array_1d<double,3>& rIntegrationPoint) {
 
     if (this->IsSplit()) {
         // Get the interface condensation matrix
@@ -146,18 +146,18 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputeInterfacePositiveSideShapeFunct
                                               mpTetrahedraSplitter->mPositiveSubdivisions,
                                               mpTetrahedraSplitter->mPositiveInterfacesParentIds,
                                               p_matrix,
-                                              IntegrationMethod);
+                                              rIntegrationPoint);
     } else {
         KRATOS_ERROR << "Using the ComputeInterfacePositiveSideShapeFunctionsAndGradientsValues method for a non divided geometry.";
     }
 };
 
 // Internally computes the splitting pattern and returns all the shape function values for the negative interface side.
-void Tetrahedra3D4ModifiedShapeFunctions::ComputeInterfaceNegativeSideShapeFunctionsAndGradientsValues(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputeInterfaceNegativeSideShapeFunctionsAndGradientsValues(
     Matrix &rInterfaceNegativeSideShapeFunctionsValues,
     ShapeFunctionsGradientsType &rInterfaceNegativeSideShapeFunctionsGradientsValues,
     Vector &rInterfaceNegativeSideWeightsValues,
-    const IntegrationMethodType IntegrationMethod) {
+    const array_1d<double,3>& rIntegrationPoint) {
 
     if (this->IsSplit()) {
         // Get the interface condensation matrix
@@ -175,19 +175,19 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputeInterfaceNegativeSideShapeFunct
                                               mpTetrahedraSplitter->mNegativeSubdivisions,
                                               mpTetrahedraSplitter->mNegativeInterfacesParentIds,
                                               p_matrix,
-                                              IntegrationMethod);
+                                              rIntegrationPoint);
     } else {
         KRATOS_ERROR << "Using the ComputeInterfaceNegativeSideShapeFunctionsAndGradientsValues method for a non divided geometry.";
     }
 };
 
 // Given a face id, computes the positive side subdivision shape function values in that face.
-void Tetrahedra3D4ModifiedShapeFunctions::ComputePositiveExteriorFaceShapeFunctionsAndGradientsValues(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputePositiveExteriorFaceShapeFunctionsAndGradientsValues(
     Matrix &rPositiveExteriorFaceShapeFunctionsValues,
     ShapeFunctionsGradientsType &rPositiveExteriorFaceShapeFunctionsGradientsValues,
     Vector &rPositiveExteriorFaceWeightsValues,
     const unsigned int FaceId,
-    const IntegrationMethodType IntegrationMethod
+    const array_1d<double,3>& rIntegrationPoint
 ) {
     if (this->IsSplit()) {
         // Get the condensation matrix
@@ -216,7 +216,7 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputePositiveExteriorFaceShapeFuncti
             mpTetrahedraSplitter->mPositiveSubdivisions,
             exterior_faces_parent_ids_vector,
             p_matrix,
-            IntegrationMethod);
+            rIntegrationPoint);
 
     } else {
         KRATOS_ERROR << "Using the ComputePositiveExteriorFaceShapeFunctionsAndGradientsValues method for a non divided geometry.";
@@ -224,12 +224,12 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputePositiveExteriorFaceShapeFuncti
 };
 
 // Given a face id, computes the positive side subdivision shape function values in that face.
-void Tetrahedra3D4ModifiedShapeFunctions::ComputeNegativeExteriorFaceShapeFunctionsAndGradientsValues(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputeNegativeExteriorFaceShapeFunctionsAndGradientsValues(
     Matrix &rNegativeExteriorFaceShapeFunctionsValues,
     ShapeFunctionsGradientsType &rNegativeExteriorFaceShapeFunctionsGradientsValues,
     Vector &rNegativeExteriorFaceWeightsValues,
     const unsigned int FaceId,
-    const IntegrationMethodType IntegrationMethod
+    const array_1d<double,3>& rIntegrationPoint
 ) {
     if (this->IsSplit()) {
         // Get the condensation matrix
@@ -258,7 +258,7 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputeNegativeExteriorFaceShapeFuncti
             mpTetrahedraSplitter->mNegativeSubdivisions,
             exterior_faces_parent_ids_vector,
             p_matrix,
-            IntegrationMethod);
+            rIntegrationPoint);
 
     } else {
         KRATOS_ERROR << "Using the ComputeNegativeExteriorFaceShapeFunctionsAndGradientsValues method for a non divided geometry.";
@@ -266,40 +266,40 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputeNegativeExteriorFaceShapeFuncti
 };
 
 // Compute the positive side interface outwards unit normal vector values.
-void Tetrahedra3D4ModifiedShapeFunctions::ComputePositiveSideInterfaceAreaNormals(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputePositiveSideInterfaceAreaNormals(
     std::vector<Vector> &rPositiveSideInterfaceAreaNormals,
-    const IntegrationMethodType IntegrationMethod) {
+    const array_1d<double,3>& rIntegrationPoint) {
 
     if (this->IsSplit()) {
         // Compute the positive side interface outwars unit normal values
         this->ComputeFaceNormalOnOneSide(rPositiveSideInterfaceAreaNormals,
                                               mpTetrahedraSplitter->mPositiveInterfaces,
-                                              IntegrationMethod);
+                                              rIntegrationPoint);
     } else {
         KRATOS_ERROR << "Using the ComputePositiveSideInterfaceAreaNormals method for a non divided geometry.";
     }
 };
 
 // Compute the positive side interface outwards unit normal vector values.
-void Tetrahedra3D4ModifiedShapeFunctions::ComputeNegativeSideInterfaceAreaNormals(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputeNegativeSideInterfaceAreaNormals(
     std::vector<Vector> &rNegativeSideInterfaceAreaNormals,
-    const IntegrationMethodType IntegrationMethod) {
+    const array_1d<double,3>& rIntegrationPoint) {
 
     if (this->IsSplit()) {
         // Compute the positive side interface outwars unit normal values
         this->ComputeFaceNormalOnOneSide(rNegativeSideInterfaceAreaNormals,
                                               mpTetrahedraSplitter->mNegativeInterfaces,
-                                              IntegrationMethod);
+                                              rIntegrationPoint);
     } else {
         KRATOS_ERROR << "Using the ComputeNegativeSideInterfaceAreaNormals method for a non divided geometry.";
     }
 };
 
 // For a given face, computes the positive side exteriorface outwards area normal vector values.
-void Tetrahedra3D4ModifiedShapeFunctions::ComputePositiveExteriorFaceAreaNormals(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputePositiveExteriorFaceAreaNormals(
     std::vector<Vector> &rPositiveExteriorFaceAreaNormal,
     const unsigned int FaceId,
-    const IntegrationMethodType IntegrationMethod)
+    const array_1d<double,3>& rIntegrationPoint)
 {
 
     if (this->IsSplit())
@@ -316,7 +316,7 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputePositiveExteriorFaceAreaNormals
         // Compute the positive side interface outwars area normal values
         this->ComputeFaceNormalOnOneSide(rPositiveExteriorFaceAreaNormal,
                                               exterior_faces_vector,
-                                              IntegrationMethod);
+                                              rIntegrationPoint);
     }
     else
     {
@@ -325,10 +325,10 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputePositiveExteriorFaceAreaNormals
 };
 
 // For a given face, computes the positive side exterior face outwards area normal vector values.
-void Tetrahedra3D4ModifiedShapeFunctions::ComputeNegativeExteriorFaceAreaNormals(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputeNegativeExteriorFaceAreaNormals(
     std::vector<Vector> &rNegativeExteriorFaceAreaNormal,
     const unsigned int FaceId,
-    const IntegrationMethodType IntegrationMethod)
+    const array_1d<double,3>& rIntegrationPoint)
 {
 
     if (this->IsSplit())
@@ -345,7 +345,7 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputeNegativeExteriorFaceAreaNormals
         // Compute the positive side interface outwars area normal values
         this->ComputeFaceNormalOnOneSide(rNegativeExteriorFaceAreaNormal,
                                               exterior_faces_vector,
-                                              IntegrationMethod);
+                                              rIntegrationPoint);
     }
     else
     {
@@ -354,7 +354,7 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputeNegativeExteriorFaceAreaNormals
 };
 
 // Computes the positive side shape function values in the edges intersections
-void Tetrahedra3D4ModifiedShapeFunctions::ComputeShapeFunctionsOnPositiveEdgeIntersections(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputeShapeFunctionsOnPositiveEdgeIntersections(
     Matrix &rPositiveEdgeIntersectionsShapeFunctionsValues){
 
     if (this->IsSplit()) {
@@ -377,7 +377,7 @@ void Tetrahedra3D4ModifiedShapeFunctions::ComputeShapeFunctionsOnPositiveEdgeInt
 };
 
 // Computes the negative side shape function values in the edges intersections
-void Tetrahedra3D4ModifiedShapeFunctions::ComputeShapeFunctionsOnNegativeEdgeIntersections(
+void MPMTetrahedra3D4ModifiedShapeFunctions::ComputeShapeFunctionsOnNegativeEdgeIntersections(
     Matrix &rNegativeEdgeIntersectionsShapeFunctionsValues){
 
     if (this->IsSplit()) {

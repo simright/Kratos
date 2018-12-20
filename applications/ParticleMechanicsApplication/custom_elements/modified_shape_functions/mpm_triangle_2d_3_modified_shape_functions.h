@@ -19,7 +19,7 @@
 
 // Project includes
 #include "utilities/divide_triangle_2d_3.h"
-#include "modified_shape_functions/modified_shape_functions.h"
+#include "custom_elements/modified_shape_functions/mpm_modified_shape_functions.h"
 
 namespace Kratos
 {
@@ -38,21 +38,20 @@ namespace Kratos
 ///@name  Functions
 ///@{
 
-class KRATOS_API(KRATOS_CORE) Triangle2D3ModifiedShapeFunctions : public ModifiedShapeFunctions
+class MPMTriangle2D3ModifiedShapeFunctions : public MPMModifiedShapeFunctions
 {
 public:
 
     ///@name Type Definitions
     ///@{
 
-    /// Pointer definition of Triangle2D3ModifiedShapeFunctions
-    KRATOS_CLASS_POINTER_DEFINITION(Triangle2D3ModifiedShapeFunctions);
+    /// Pointer definition of MPMTriangle2D3ModifiedShapeFunctions
+    KRATOS_CLASS_POINTER_DEFINITION(MPMTriangle2D3ModifiedShapeFunctions);
 
     // General type definitions
-    typedef ModifiedShapeFunctions                             BaseType;
+    typedef MPMModifiedShapeFunctions                          BaseType;
     typedef BaseType::GeometryType                             GeometryType;
     typedef BaseType::GeometryPointerType                      GeometryPointerType;
-    typedef BaseType::IntegrationMethodType                    IntegrationMethodType;
     typedef BaseType::ShapeFunctionsGradientsType              ShapeFunctionsGradientsType;
 
     typedef BaseType::IndexedPointGeometryType                 IndexedPointGeometryType;
@@ -60,17 +59,16 @@ public:
 
     typedef BaseType::IntegrationPointType                     IntegrationPointType;
     typedef BaseType::IntegrationPointsArrayType               IntegrationPointsArrayType;
-    typedef BaseType::IntegrationPointsContainerType           IntegrationPointsContainerType;
 
     ///@}
     ///@name Life Cycle
     ///@{
 
     /// Default constructor
-    Triangle2D3ModifiedShapeFunctions(const GeometryPointerType rpInputGeometry, const Vector& rNodalDistances);
+    MPMTriangle2D3ModifiedShapeFunctions(const GeometryPointerType rpInputGeometry, const Vector& rNodalDistances);
 
     /// Destructor
-    ~Triangle2D3ModifiedShapeFunctions() override;
+    ~MPMTriangle2D3ModifiedShapeFunctions() override;
 
     ///@}
     ///@name Access
@@ -111,26 +109,26 @@ public:
     * @return rPositiveSideShapeFunctionValues: Matrix containing the positive side computed shape function values.
     * @return rPositiveSideShapeFunctionsGradientsValues: std::vector containing the shape functions gradients values on the positive side.
     * @return rPositiveSideWeightsValues: Vector containing the Gauss pts. positive side weights (already multiplied by the Jacobian).
-    * @param IntegrationMethod Desired integration quadrature.
+    * @param  rIntegrationPoint: Coordinate of integration point.
     */
     void ComputePositiveSideShapeFunctionsAndGradientsValues(
         Matrix &rPositiveSideShapeFunctionsValues,
         ShapeFunctionsGradientsType &rPositiveSideShapeFunctionsGradientsValues,
         Vector &rPositiveSideWeightsValues,
-        const IntegrationMethodType IntegrationMethod) override;
+        const array_1d<double,3>& rIntegrationPoint) override;
 
     /**
     * Returns the shape function values in the negative split element side for a given quadrature.
     * @return rNegativeSideShapeFunctionValues: Matrix containing the negative side computed shape function values.
     * @return rNegativeSideShapeFunctionsGradientsValues: std::vector containing the shape functions gradients values on the negative side.
     * @return rNegativeSideWeightsValues: Vector containing the Gauss pts. negative side weights (already multiplied by the Jacobian).
-    * @param IntegrationMethod Desired integration quadrature.
+    * @param  rIntegrationPoint: Coordinate of integration point.
     */
     void ComputeNegativeSideShapeFunctionsAndGradientsValues(
         Matrix &rNegativeSideShapeFunctionsValues,
         ShapeFunctionsGradientsType &rNegativeSideShapeFunctionsGradientsValues,
         Vector &rNegativeSideWeightsValues,
-        const IntegrationMethodType IntegrationMethod) override;
+        const array_1d<double,3>& rIntegrationPoint) override;
 
     ///@}
 
@@ -139,96 +137,96 @@ public:
     * @return rInterfacePositiveSideShapeFunctionValues: Matrix containing the positive side computed shape function values.
     * @return rInterfacePositiveSideShapeFunctionsGradientsValues: std::vector containing the shape functions gradients values on the positive side.
     * @return rInterfacePositiveSideWeightsValues: Vector containing the Gauss pts. positive side weights (already multiplied by the Jacobian).
-    * @param IntegrationMethod Desired integration quadrature.
+    * @param  rIntegrationPoint: Coordinate of integration point.
     */
     void ComputeInterfacePositiveSideShapeFunctionsAndGradientsValues(
         Matrix &rInterfacePositiveSideShapeFunctionsValues,
         ShapeFunctionsGradientsType &rInterfacePositiveSideShapeFunctionsGradientsValues,
         Vector &rInterfacePositiveSideWeightsValues,
-        const IntegrationMethodType IntegrationMethod) override;
+        const array_1d<double,3>& rIntegrationPoint) override;
 
     /**
     * Returns the shape function values in the negative split element interface side for a given quadrature.
     * @return rInterfaceNegativeSideShapeFunctionValues: Matrix containing the negative side computed shape function values.
     * @return rInterfaceNegativeSideShapeFunctionsGradientsValues: std::vector containing the shape functions gradients values on the negative side.
     * @return rInterfaceNegativeSideWeightsValues: Vector containing the Gauss pts. negative side weights (already multiplied by the Jacobian).
-    * @param IntegrationMethod Desired integration quadrature.
+    * @param  rIntegrationPoint: Coordinate of integration point.
     */
     void ComputeInterfaceNegativeSideShapeFunctionsAndGradientsValues(
         Matrix &rInterfaceNegativeSideShapeFunctionsValues,
         ShapeFunctionsGradientsType &rInterfaceNegativeSideShapeFunctionsGradientsValues,
         Vector &rInterfaceNegativeSideWeightsValues,
-        const IntegrationMethodType IntegrationMethod) override;
+        const array_1d<double,3>& rIntegrationPoint) override;
 
     /**
     * Given a face id, returns the shape function values in the positive split element exterior face side for a given quadrature.
     * @return rInterfacePositiveSideShapeFunctionValues: Matrix containing the positive side computed shape function values.
     * @return rInterfacePositiveSideShapeFunctionsGradientsValues: std::vector containing the shape functions gradients values on the positive side.
     * @return rInterfacePositiveSideWeightsValues: Vector containing the Gauss pts. positive side weights (already multiplied by the Jacobian).
-    * @param FaceId Face local id. in where the values are to be computed.
-    * @param IntegrationMethod Desired integration quadrature.
+    * @param  FaceId Face local id. in where the values are to be computed.
+    * @param  rIntegrationPoint: Coordinate of integration point.
     */
     void ComputePositiveExteriorFaceShapeFunctionsAndGradientsValues(
         Matrix &rPositiveExteriorFaceShapeFunctionsValues,
         ShapeFunctionsGradientsType &rPositiveExteriorFaceShapeFunctionsGradientsValues,
         Vector &rPositiveExteriorFaceWeightsValues,
         const unsigned int FaceId,
-        const IntegrationMethodType IntegrationMethod) override;
+        const array_1d<double,3>& rIntegrationPoint) override;
 
     /**
     * Given a face id, returns the shape function values in the negative split element exterior face side for a given quadrature.
     * @return rInterfaceNegativeSideShapeFunctionValues: Matrix containing the negative side computed shape function values.
     * @return rInterfaceNegativeSideShapeFunctionsGradientsValues: std::vector containing the shape functions gradients values on the negative side.
     * @return rInterfaceNegativeSideWeightsValues: Vector containing the Gauss pts. negative side weights (already multiplied by the Jacobian).
-    * @param FaceId Face local id. in where the values are to be computed.
-    * @param IntegrationMethod Desired integration quadrature.
+    * @param  FaceId Face local id. in where the values are to be computed.
+    * @param  rIntegrationPoint: Coordinate of integration point.
     */
     void ComputeNegativeExteriorFaceShapeFunctionsAndGradientsValues(
         Matrix &rNegativeExteriorFaceShapeFunctionsValues,
         ShapeFunctionsGradientsType &rNegativeExteriorFaceShapeFunctionsGradientsValues,
         Vector &rNegativeExteriorFaceWeightsValues,
         const unsigned int FaceId,
-        const IntegrationMethodType IntegrationMethod) override;
+        const array_1d<double,3>& rIntegrationPoint) override;
 
     /**
     * Returns the positive side outwards area normal vector values for the Gauss pts. of given quadrature.
     * @return rPositiveSideInterfaceAreaNormal: Outwards area normal vector list.
-    * @param IntegrationMethod Desired integration quadrature.
+    * @param  rIntegrationPoint: Coordinate of integration point.
     */
     void ComputePositiveSideInterfaceAreaNormals(
         std::vector<Vector> &rPositiveSideInterfaceAreaNormal,
-        const IntegrationMethodType IntegrationMethod) override;
+        const array_1d<double,3>& rIntegrationPoint) override;
 
     /**
     * Returns the positive side outwards area normal vector values for the Gauss pts. of given quadrature.
     * @return rNegativeSideInterfaceAreaNormal: Outwards area normal vector list.
-    * @param IntegrationMethod Desired integration quadrature.
+    * @param  rIntegrationPoint: Coordinate of integration point.
     */
     void ComputeNegativeSideInterfaceAreaNormals(
         std::vector<Vector> &rNegativeSideInterfaceAreaNormal,
-        const IntegrationMethodType IntegrationMethod) override;
+        const array_1d<double,3>& rIntegrationPoint) override;
 
     /**
     * Returns the positive side outwards area normal vector values for the Gauss pts. of given quadrature.
     * @return rPositiveExteriorFaceAreaNormal: Outwards area normal vector list.
-    * @param FaceId Face local id. in where the values are to be computed.
-    * @param IntegrationMethod Desired integration quadrature.
+    * @param  FaceId Face local id. in where the values are to be computed.
+    * @param  rIntegrationPoint: Coordinate of integration point.
     */
     void ComputePositiveExteriorFaceAreaNormals(
         std::vector<Vector> &rPositiveExteriorFaceAreaNormal,
         const unsigned int FaceId,
-        const IntegrationMethodType IntegrationMethod) override;
+        const array_1d<double,3>& rIntegrationPoint) override;
 
     /**
     * Returns the negative side outwards area normal vector values for the Gauss pts. of given quadrature.
     * @return rNegativeExteriorFaceAreaNormal: Outwards area normal vector list.
-    * @param FaceId Face local id. in where the values are to be computed.
-    * @param IntegrationMethod Desired integration quadrature.
+    * @param  FaceId Face local id. in where the values are to be computed.
+    * @param  rIntegrationPoint: Coordinate of integration point.
     */
     void ComputeNegativeExteriorFaceAreaNormals(
         std::vector<Vector> &rNegativeExteriorFaceAreaNormal,
         const unsigned int FaceId,
-        const IntegrationMethodType IntegrationMethod) override;
+        const array_1d<double,3>& rIntegrationPoint) override;
 
     /**
     * Returns the positive side edge intersections shape function values.
@@ -320,11 +318,11 @@ private:
     ///@{
 
     /// Assignment operator.
-    Triangle2D3ModifiedShapeFunctions& operator=(Triangle2D3ModifiedShapeFunctions const& rOther);
+    MPMTriangle2D3ModifiedShapeFunctions& operator=(MPMTriangle2D3ModifiedShapeFunctions const& rOther);
 
     /// Copy constructor.
-    Triangle2D3ModifiedShapeFunctions(Triangle2D3ModifiedShapeFunctions const& rOther) :
-        ModifiedShapeFunctions(rOther.GetInputGeometry(), rOther.GetNodalDistances()),
+    MPMTriangle2D3ModifiedShapeFunctions(MPMTriangle2D3ModifiedShapeFunctions const& rOther) :
+        MPMModifiedShapeFunctions(rOther.GetInputGeometry(), rOther.GetNodalDistances()),
         mpTriangleSplitter(new DivideTriangle2D3(*rOther.GetInputGeometry(), rOther.GetNodalDistances())) {
 
         // Perform the element splitting
@@ -334,7 +332,7 @@ private:
 
     ///@}
 
-};// class Triangle2D3ModifiedShapeFunctions
+};// class MPMTriangle2D3ModifiedShapeFunctions
 
 }
 #endif /* KRATOS_MPM_TRIANGLE_2D_3_MODIFIED_SHAPE_FUNCTIONS defined */
