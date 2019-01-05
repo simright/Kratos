@@ -44,6 +44,8 @@ class PostprocessOutputProcess(Process):
             import gid_output_process
             self.post_process = gid_output_process.GiDOutputProcess(model_part, output_name, postprocess_parameters)
         elif settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("vtk_flags"): # In case of VTK post process
+
+            # Creating parameters
             vtk_params = KratosMultiphysics.Parameters('''{ }''')
 
             # model_part_name
@@ -62,11 +64,11 @@ class PostprocessOutputProcess(Process):
             if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("output_frequency"):
                 vtk_params.AddValue("output_frequency", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["output_frequency"])
 
-            # nodal_results
+            # nodal_solution_step_data_variables
             if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("nodal_results"):
                 vtk_params.AddValue("nodal_solution_step_data_variables", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["nodal_results"])
 
-            # nodal_nonhistorical_results
+            # nodal_data_value_variables
             if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("nodal_nonhistorical_results"):
                 vtk_params.AddValue("nodal_data_value_variables", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["nodal_nonhistorical_results"])
 
@@ -74,7 +76,36 @@ class PostprocessOutputProcess(Process):
             self.post_process = vtk_output_process.VtkOutputProcess(Model, vtk_params)
 
         elif settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("hdf5_flags"): # In case of HDF5 post process
-            # TODO
+
+            # Importing application
+            try:
+                import KratosMultiphysics.HDF5Application as HDF5Application
+            except ImportError as e:
+                raise Exception("Compile HDF5Application in order to use HDF5 postprocess")
+
+            # Creating parameters
+            hdf5_params = KratosMultiphysics.Parameters('''{ }''')
+
+            # model_part_name
+            if settings["Parameters"].Has("model_part_name"):
+                hdf5_params.AddValue("model_part_name", settings["Parameters"]["model_part_name"])
+
+            # file_name
+            if settings["Parameters"].Has("output_name"):
+                hdf5_params.AddValue("file_name", settings["Parameters"]["output_name"])
+
+            # nodal_solution_step_data_settings
+            if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("nodal_results"):
+                hdf5_params.AddEmptyValue("nodal_solution_step_data_settings")
+                hdf5_params["nodal_solution_step_data_settings"].AddValue("list_of_variables", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["nodal_results"])
+
+            # nodal_data_value_settings
+            if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("nodal_nonhistorical_results"):
+                hdf5_params.AddEmptyValue("nodal_data_value_settings")
+                hdf5_params["nodal_data_value_settings"].AddValue("list_of_variables", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["nodal_nonhistorical_results"])
+
+            from single_mesh_temporal_output_process import Factory as HDF5Factory
+            self.post_process = HDF5Factory(hdf5_params, Model)
 
     def ExecuteInitialize(self):
         """ This method is executed at the begining to initialize the process
