@@ -38,7 +38,18 @@ class PostprocessOutputProcess(Process):
             import gid_output_process
             self.post_process = gid_output_process.GiDOutputProcess(model_part, output_name, postprocess_parameters)
         elif settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("vtk_flags"): # In case of VTK post process
-            # TODO
+            vtk_params = KratosMultiphysics.Parameters('''{ }''')
+
+            vtk_params.AddValue("model_part_name", settings["Parameters"]["model_part_name"])
+            vtk_params.AddValue("file_format", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["vtk_flags"]["file_format"])
+            vtk_params.AddValue("output_control_type", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["output_control_type"])
+            vtk_params.AddValue("output_frequency", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["output_frequency"])
+            vtk_params.AddValue("nodal_solution_step_data_variables", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["nodal_results"])
+            vtk_params.AddValue("nodal_data_value_variables", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["nodal_nonhistorical_results"])
+
+            import vtk_output_process
+            self.post_process = vtk_output_process.VtkOutputProcess(Model, vtk_params)
+
         elif settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("hdf5_flags"): # In case of HDF5 post process
             # TODO
 
