@@ -10,7 +10,11 @@ def Factory(settings, Model):
 
 # All the processes python processes should be derived from "Process"
 class PostprocessOutputProcess(Process):
-    """This process wraps all the alternative methods to postprocess the current problem
+    """This process wraps all the alternative methods to postprocess the current problem.
+    The options are:
+        - GiD postprocess
+        - VTK postprocess
+        - HDF5 postprocess
 
     Only the member variables listed below should be accessed directly.
 
@@ -30,6 +34,8 @@ class PostprocessOutputProcess(Process):
 
         KratosMultiphysics.Process.__init__(self)
 
+        self.auxiliar_process = [] # Here we add the processes for auxiliar executions before printint the result
+
         # In case of GiD post process
         if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("gidpost_flags"):
             model_part = Model[settings["Parameters"]["model_part_name"].GetString()]
@@ -40,12 +46,29 @@ class PostprocessOutputProcess(Process):
         elif settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("vtk_flags"): # In case of VTK post process
             vtk_params = KratosMultiphysics.Parameters('''{ }''')
 
-            vtk_params.AddValue("model_part_name", settings["Parameters"]["model_part_name"])
-            vtk_params.AddValue("file_format", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["vtk_flags"]["file_format"])
-            vtk_params.AddValue("output_control_type", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["output_control_type"])
-            vtk_params.AddValue("output_frequency", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["output_frequency"])
-            vtk_params.AddValue("nodal_solution_step_data_variables", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["nodal_results"])
-            vtk_params.AddValue("nodal_data_value_variables", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["nodal_nonhistorical_results"])
+            # model_part_name
+            if settings["Parameters"].Has("model_part_name"):
+                vtk_params.AddValue("model_part_name", settings["Parameters"]["model_part_name"])
+
+            # file_format
+            if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["vtk_flags"].Has("file_format"):
+                vtk_params.AddValue("file_format", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["vtk_flags"]["file_format"])
+
+            # output_control_type
+            if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("output_control_type"):
+                vtk_params.AddValue("output_control_type", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["output_control_type"])
+
+            # output_frequency
+            if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("output_frequency"):
+                vtk_params.AddValue("output_frequency", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["output_frequency"])
+
+            # nodal_results
+            if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("nodal_results"):
+                vtk_params.AddValue("nodal_solution_step_data_variables", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["nodal_results"])
+
+            # nodal_nonhistorical_results
+            if settings["Parameters"]["postprocess_parameters"]["result_file_configuration"].Has("nodal_nonhistorical_results"):
+                vtk_params.AddValue("nodal_data_value_variables", settings["Parameters"]["postprocess_parameters"]["result_file_configuration"]["nodal_nonhistorical_results"])
 
             import vtk_output_process
             self.post_process = vtk_output_process.VtkOutputProcess(Model, vtk_params)
@@ -99,6 +122,11 @@ class PostprocessOutputProcess(Process):
         Keyword arguments:
         self -- It signifies an instance of a class.
         """
+        # First execute the auxiliar processes
+        for process in self.auxiliar_process:
+            process.Execute()
+
+        # Calling PrintOutput
         self.post_process.PrintOutput()
 
     def ExecuteBeforeOutputStep(self):
