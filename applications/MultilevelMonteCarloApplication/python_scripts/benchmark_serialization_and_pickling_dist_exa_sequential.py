@@ -45,7 +45,7 @@ def create_object():
 
     serializer = KratosMultiphysics.StreamSerializer()
     serializer.Save("Model", current_model)
-    
+
     after_save = timer.time()
     print("Kratos saving to Serializer time = ",after_save-before_save)
     return serializer
@@ -58,11 +58,11 @@ if __name__ == "__main__":
     init_time = timer.time()
     object_to_share = create_object()
     #barrier()
-    end_creation_time = timer.time() 
+    end_creation_time = timer.time()
 
-    for i in range(ncores * nrepetitions): 
-        f(object_to_share) 
-    
+    for i in range(ncores * nrepetitions):
+        f(object_to_share)
+
     #barrier()
     end_execution_time = timer.time()
 
