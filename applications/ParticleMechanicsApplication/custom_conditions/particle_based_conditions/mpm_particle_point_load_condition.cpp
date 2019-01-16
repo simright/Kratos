@@ -66,15 +66,7 @@ namespace Kratos
     //************************************************************************************
     //************************************************************************************
 
-    void MPMParticleBaseLoadCondition::Initialize()
-    {
-        KRATOS_TRY
 
-        // Initial position of the meshless particle
-        const array_1d<double,3>& xg = this->GetValue(POINT_LOAD_COORD);
-
-        KRATOS_CATCH( "" )
-    }
 
     void MPMParticleBaseLoadCondition::InitializeGeneralVariables (GeneralVariables& rVariables, const ProcessInfo& rCurrentProcessInfo)
     {
@@ -141,7 +133,6 @@ namespace Kratos
                 for ( unsigned int j = 0; j < dimension; j++ )
                 {
                     delta_xg[j] += rVariables.N[i] * rVariables.CurrentDisp(i,j);
-
                 }
             }
         }
@@ -152,6 +143,34 @@ namespace Kratos
 
         KRATOS_CATCH( "" )
     }
+
+    void UpdatedLagrangian::InitializeSolutionStep( ProcessInfo& rCurrentProcessInfo )
+    {
+        /* NOTE:
+        In the InitializeSolutionStep of each time step the nodal initial conditions are evaluated.
+        This function is called by the base scheme class.*/
+        GeometryType& rGeom = GetGeometry();
+        const unsigned int dimension = rGeom.WorkingSpaceDimension();
+        const unsigned int number_of_nodes = rGeom.PointsNumber();
+        const array_1d<double,3> & xg = this->GetValue(MPC_COORD);
+        const array_1d<double,3> & f_c = this->GetValue(MPC_FORCE);
+        GeneralVariables Variables;
+
+        // Calculating shape function
+        Variables.N = this->MPMShapeFunctionPointValues(Variables.N, xg);
+
+        array_1d<double,3> nodal_force = ZeroVector(3);
+
+        // Here MP contribution in terms of force are added
+        for ( unsigned int i = 0; i < number_of_nodes; i++ )
+        {
+            for (unsigned int j = 0; j < dimension; j++)
+            {
+                nodal_force[j] += Variables.N[i] * f_c[j];
+            }
+        }
+    }
+
 
     void MPMParticlePointLoadCondition::CalculateAll(
         MatrixType& rLeftHandSideMatrix, VectorType& rRightHandSideVector,
