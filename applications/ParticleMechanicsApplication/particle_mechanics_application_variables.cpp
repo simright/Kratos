@@ -69,6 +69,7 @@ namespace Kratos
 
     // Particle condition variables
     KRATOS_CREATE_3D_VARIABLE_WITH_COMPONENTS( MPC_COORD )
+    KRATOS_CREATE_3D_VARIABLE_WITH_COMPONENTS( MPC_FORCE )
 
 
     // Others
