@@ -21,9 +21,6 @@ set( KRATOS_PARTICLE_MECHANICS_APPLICATION_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/custom_elements/updated_lagrangian_quadrilateral.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/custom_elements/updated_lagrangian_axisymmetry.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/custom_elements/updated_lagrangian_embedded.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/custom_elements/modified_shape_functions/mpm_modified_shape_functions.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/custom_elements/modified_shape_functions/mpm_triangle_2d_3_modified_shape_functions.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/custom_elements/modified_shape_functions/mpm_tetrahedra_3d_4_modified_shape_functions.cpp
 
 	###constitutive laws
 	${CMAKE_CURRENT_SOURCE_DIR}/custom_constitutive/linear_elastic_3D_law.cpp
