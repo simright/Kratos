@@ -18,6 +18,7 @@
 
 // External includes
 #include "custom_elements/updated_lagrangian.hpp"
+#include "utilities/divide_geometry.h"
 
 
 namespace Kratos
@@ -151,6 +152,8 @@ protected:
 
     Vector mDistance;
 
+    DivideGeometry::Pointer mpGeometrySplitter;
+
     ///@}
     ///@name Protected Operators
     ///@{
@@ -170,11 +173,33 @@ protected:
     virtual void InitializeEmbeddedVariables();
 
     /**
+    * Returns the intersection points condensation matrix.
+    * This matrix is used to extrapolate the subdivisions shape function values to the
+    * original geometry ones. It has size (n_nodes+n_edges)x(n_nodes).
+    * @return rIntPointCondMatrix: Reference to the intersection points condensation matrix.
+    * @param rEdgeNodeI Integers array containing the nodes "I" that conform the edges.
+    * @param rEdgeNodeJ Integers array containing the nodes "J" that conform the edges.
+    * @param rSplitEdges Integers array containing the original nodes ids and the intersected edges nodes ones.
+    */
+    void SetCondensationMatrix(
+        Matrix& rIntPointCondMatrix,
+        const std::vector<int>& rEdgeNodeI,
+        const std::vector<int>& rEdgeNodeJ,
+        const std::vector<int>& rSplitEdges);
+
+    /**
      * Returns true if there is any cut in the element
      */
     bool IsCut() {
         return ((mNumPositiveNodes > 0) && (mNumNegativeNodes > 0));
-    }
+    };
+
+    /**
+     * Returns true if the element is splitted
+     */
+    bool IsSplit() {
+        return mpGeometrySplitter->mIsSplit;
+    };
 
     ///@}
     ///@name Protected Operations

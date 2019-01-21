@@ -21,6 +21,8 @@
 #include "includes/define.h"
 #include "includes/kratos_flags.h"
 #include "custom_elements/updated_lagrangian_embedded.hpp"
+#include "utilities/divide_triangle_2d_3.h"
+#include "utilities/divide_tetrahedra_3d_4.h"
 #include "utilities/math_utils.h"
 #include "includes/constitutive_law.h"
 #include "custom_utilities/particle_mechanics_math_utilities.h"
@@ -194,10 +196,74 @@ void UpdatedLagrangianEmbedded::InitializeEmbeddedVariables()
             mNegativeIndices.push_back(i);
         }
     }
+
+    if (this->IsCut()){
+        // Initialize Geometry Splitter
+        const unsigned int dimension       = rGeom.WorkingSpaceDimension();
+        if (dimension == 2 && number_of_nodes == 3)
+            mpGeometrySplitter = Kratos::make_shared<DivideTriangle2D3>(rGeom, mDistance);
+        else if (dimension == 3 && number_of_nodes == 4)
+            mpGeometrySplitter = Kratos::make_shared<DivideTetrahedra3D4>(rGeom, mDistance);
+        else
+            KRATOS_ERROR <<  "Dimension given is wrong: Something is wrong with the given dimension in function: InitializeEmbeddedVariables" << std::endl;
+
+        // Perform the element splitting
+        mpGeometrySplitter->GenerateDivision();
+        mpGeometrySplitter->GenerateIntersectionsSkin();
+
+        // If Splitted, then generate condensation matrix
+        if(this->IsSplit()){
+            Matrix p_matrix;
+            this->SetCondensationMatrix(p_matrix, mpGeometrySplitter->GetEdgeIdsI(), mpGeometrySplitter->GetEdgeIdsJ(), mpGeometrySplitter->GetSplitEdges());
+        }
+
+    }
 }
 
 //************************************************************************************
 //************************************************************************************
+
+// Sets the condensation matrix to transform the subdivision values to entire element ones.
+void UpdatedLagrangianEmbedded::SetCondensationMatrix(
+    Matrix& rIntPointCondMatrix,
+    const std::vector<int>& rEdgeNodeI,
+    const std::vector<int>& rEdgeNodeJ,
+    const std::vector<int>& rSplitEdges) {
+
+    const GeometryType& rGeom = GetGeometry();
+    const unsigned int n_edges = rGeom.EdgesNumber();
+    const unsigned int n_nodes = rGeom.PointsNumber();
+
+    // Resize condensation matrix
+    rIntPointCondMatrix.resize(n_nodes + n_edges, n_nodes, false);
+
+    // Initialize intersection points condensation matrix
+    rIntPointCondMatrix = ZeroMatrix(n_nodes + n_edges, n_nodes);
+
+    // Fill the original geometry points main diagonal
+    for (unsigned int i = 0; i < n_nodes; ++i) {
+        rIntPointCondMatrix(i,i) = 1.0;
+    }
+
+    // Compute the intersection points contributions
+    unsigned int row = n_nodes;
+    for (unsigned int id_edge = 0; id_edge < n_edges; ++id_edge) {
+        // Check if the edge has an intersection point
+        if (rSplitEdges[n_nodes+id_edge] != -1) {
+            // Get the nodes that compose the edge
+            const unsigned int edge_node_i = rEdgeNodeI[id_edge];
+            const unsigned int edge_node_j = rEdgeNodeJ[id_edge];
+
+            // Compute the relative coordinate of the intersection point over the edge
+            const double aux_node_rel_location = std::abs (mDistance[edge_node_i] / (mDistance[edge_node_j] - mDistance[edge_node_i]));
+
+            // Store the relative coordinate values as the original geometry nodes sh. function value in the intersections
+            rIntPointCondMatrix(row, edge_node_i) = 1.0 - aux_node_rel_location;
+            rIntPointCondMatrix(row, edge_node_j) = aux_node_rel_location;
+        }
+        row++;
+    }
+}
 
 //************************************************************************************
 //************************************************************************************
