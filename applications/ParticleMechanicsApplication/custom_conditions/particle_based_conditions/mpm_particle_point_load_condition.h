@@ -21,7 +21,7 @@
 
 // Project includes
 #include "includes/define.h"
-#include "custom_conditions/particle_based_conditions/mpm_particle_point_load_condition.h"
+#include "custom_conditions/particle_based_conditions/mpm_particle_base_load_condition.h"
 #include "includes/variables.h"
 
 namespace Kratos
@@ -158,11 +158,15 @@ protected:
     /**
      * Initialize Element General Variables
      */
-    virtual void InitializeGeneralVariables (
-        GeneralVariables& rVariables, 
+    void InitializeGeneralVariables (
+        GeneralVariables& rVariables,
         const ProcessInfo& rCurrentProcessInfo
         );
 
+    /**
+     * Called at the beginning of each solution step
+     */
+    void InitializeSolutionStep(ProcessInfo& rCurrentProcessInfo);
 
     /**
      * This functions calculates both the RHS and the LHS
@@ -183,18 +187,25 @@ protected:
     /**
      * It calcules the integration load for the point load
      */
-    virtual double GetPointLoadIntegrationWeight();
+    double GetPointLoadIntegrationWeight();
 
     /**
      * Calculate Shape Function Values in a given point
      */
 
-    virtual Vector& MPMShapeFunctionPointValues(Vector& rResult, const array_1d<double,3>& rPoint);
+    Vector& MPMShapeFunctionPointValues(Vector& rResult, const array_1d<double,3>& rPoint);
+
+    /**
+     * Calculation of the Current Displacement
+     */
+    Matrix& CalculateCurrentDisp(Matrix & rCurrentDisp, const ProcessInfo& rCurrentProcessInfo);
 
     /**
      * Sets on rElementalDofList the degrees of freedom of the considered element geometry
      */
-    void GetDofList(DofsVectorType& rElementalDofList, ProcessInfo& rCurrentProcessInfo) override;
+    void GetDofList(DofsVectorType& rElementalDofList, ProcessInfo& rCurrentProcessInfo);
+
+    void UpdateGaussPoint(GeneralVariables & rVariables, const ProcessInfo& rCurrentProcessInfo);
 
     ///@}
     ///@name Protected  Access

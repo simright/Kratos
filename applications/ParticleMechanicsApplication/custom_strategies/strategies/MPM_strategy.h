@@ -179,8 +179,11 @@ public:
         // Create Material Point Element
         this->CreateMaterialPointElement(rNewElement, IsMixedFormulation);
 
-        // Create Material Point Condition
-        this->CreateMaterialPointCondition();
+        // Create Grid Based Condition
+        this->CreateGridBasedCondition();
+
+        // Create Particle Based Condition
+        this->CreateParticleBasedCondition();
 
         // Define a standard static strategy to be used in the calculation
         if(SolutionType == "static" || SolutionType == "Static")
@@ -592,63 +595,73 @@ public:
      * @brief Function to Initiate material point condition.
      * @details It is designed to be called ONCE by the class constructor.
      */
-    virtual void CreateMaterialPointCondition()
+    virtual void CreateGridBasedCondition()
     {
-        // TODO: this if only grid and slip conditions
-            mr_mpm_model_part.SetConditions(mr_grid_model_part.pConditions());
+        mr_mpm_model_part.SetConditions(mr_grid_model_part.pConditions());
+    }
 
+
+    /**
+     * @brief Function to Initiate material point condition.
+     * @details It is designed to be called ONCE by the class constructor.
+     */
+    virtual void CreateParticleBasedCondition()
+    {
         // TODO: this only for particle conditions
-            // Initialize zero the variables needed
-            array_1d<double,3> xg_c = ZeroVector(3);
+        // Initialize zero the variables needed
+        array_1d<double,3> xg_c = ZeroVector(3);
+        array_1d<double,3> f_c = ZeroVector(3);
 
-            // Determine condition index
-            const unsigned int number_conditions = mr_grid_model_part.NumberOfConditions();
-            unsigned int last_condition_id = number_conditions + 1;
+        // Determine condition index
+        const unsigned int number_conditions = mr_grid_model_part.NumberOfConditions();
+        unsigned int last_condition_id = number_conditions + 1;
 
-            // Loop over the submodelpart of mr_initial_model_part
-            for (ModelPart::SubModelPartIterator submodelpart_it = mr_grid_model_part.SubModelPartsBegin();
-                    submodelpart_it != mr_grid_model_part.SubModelPartsEnd(); submodelpart_it++)
+        // Loop over the submodelpart of mr_initial_model_part
+        for (ModelPart::SubModelPartIterator submodelpart_it = mr_initial_model_part.SubModelPartsBegin();
+                submodelpart_it != mr_initial_model_part.SubModelPartsEnd(); submodelpart_it++)
+        {
+            ModelPart& submodelpart = *submodelpart_it;
+            std::string submodelpart_name = submodelpart.Name();
+
+
+            // Loop over the elements of submodelpart's submodelpart and generate mpm condition to be appended to the mr_mpm_model_part
+            for (ModelPart::ConditionIterator i = submodelpart.ConditionsBegin();
+                    i != submodelpart.ConditionsEnd(); i++)
             {
-                ModelPart& submodelpart = *submodelpart_it;
-                std::string submodelpart_name = submodelpart.Name();
+                unsigned int new_condition_id = last_condition_id + 1;
 
-                //TODO: if condition check if it is a particle load not a grid and slip conditions :: will be done by Nanda
-                    mr_mpm_model_part.CreateSubModelPart(submodelpart_name);
+                Properties::Pointer properties = i->pGetProperties();
 
-                    // Loop over the conditions of submodelpart's submodelpart and generate mpm condition to be appended to the mr_mpm_model_part
-                    for (ModelPart::ConditionIterator i = submodelpart.ConditionsBegin();
-                            i != submodelpart.ConditionsEnd(); i++)
+                const Geometry< Node < 3 > >& rGeom = i->GetGeometry(); // current condition's connectivity
+                const unsigned int number_of_nodes = rGeom.size();
+
+                const GeometryData::KratosGeometryType rGeoType = rGeom.GetGeometryType();
+
+
+                for ( unsigned int PointNumber = 0; PointNumber < number_of_nodes; PointNumber++ )
+                {
+                    xg_c.clear();
+                    //if( this->Has( POINT_LOAD ) )
+                    //{
+                    for (unsigned int dim = 0; dim < rGeom.WorkingSpaceDimension(); dim++)
                     {
-                        Properties::Pointer properties = i->pGetProperties();
-
-                        const Geometry< Node < 3 > >& rGeom = i->GetGeometry(); // current condition's connectivity
-                        const unsigned int number_of_nodes = rGeom.size();
-
-                        unsigned int new_condition_id = 0;
-                        //FIXME: This will create 2 particle condition for the same nodes!!!!!
-                        for ( unsigned int PointNumber = 0; PointNumber < number_of_nodes; PointNumber++ )
-                        {
-                            xg_c.clear();
-
-                            new_condition_id = last_condition_id + PointNumber;
-
-                            //TODO: Identify what type of condition to be created
-                            const GeometryData::KratosGeometryType rGeoType = rGeom.GetGeometryType();
-                            Condition new_condition;
-                            Condition::Pointer p_condition = new_condition.Create(new_element_id, mr_grid_model_part.ElementsBegin()->GetGeometry(), properties);
-
-                            // Loop over the nodes of the grid element
-                            for (unsigned int dim = 0; dim < rGeom.WorkingSpaceDimension(); dim++)
-                                xg_c[dim] = rGeom[PointNumber].Coordinates()[dim];
-
-                            p_condition->SetValue(MPC_COORD, xg_c);
-
-                            // Add the MP Condition to the model part
-                            mr_mpm_model_part.GetSubModelPart(submodelpart_name).AddCondition(p_condition);
-                        }
-
-                        last_condition_id += number_of_nodes;
+                        xg_c[dim] = rGeom[PointNumber].Coordinates()[dim];
+                        //f_c[dim] = this->GetValue( POINT_LOAD );
                     }
+                    //}
+
+                }
+
+                Condition new_condition;
+                Condition::Pointer p_condition = new_condition.Create(new_condition_id, i->GetGeometry(), properties);
+
+                p_condition->SetValue(MPC_COORD, xg_c);
+                p_condition->SetValue(MPC_FORCE, f_c);
+
+                // Add the MP Condition to the model part
+                mr_mpm_model_part.GetSubModelPart(submodelpart_name).AddCondition(p_condition);
+
+            }
 
         }
     }

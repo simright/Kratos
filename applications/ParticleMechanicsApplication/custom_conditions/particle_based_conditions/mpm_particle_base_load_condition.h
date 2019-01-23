@@ -21,7 +21,7 @@
 
 // Project includes
 #include "includes/define.h"
-#include "custom_conditions/particle_based_conditions/mpm_particle_base_load_condition.h"
+#include "custom_conditions/mpm_base_load_condition.h"
 #include "includes/variables.h"
 
 namespace Kratos
@@ -132,6 +132,53 @@ public:
     ///@}
 
 protected:
+
+    /**
+     * Parameters to be used in the Element as they are. Direct interface to Parameters Struct
+     */
+
+    struct GeneralVariables
+    {
+    private:
+
+        // Variables including all integration points
+        const Matrix* pDN_De;
+        const Vector* pNcontainer;
+
+    public:
+
+
+        // General variables for large displacement use
+        Vector  N;
+
+        // Variables including all integration points
+        Matrix DeltaPosition;
+        Matrix CurrentDisp;
+        Matrix PreviousDisp;
+
+        /**
+         * sets the value of a specified pointer variable
+         */
+
+        void SetShapeFunctions(const Vector& rNcontainer)
+        {
+            pNcontainer=&rNcontainer;
+        };
+
+
+        /**
+         * returns the value of a specified pointer variable
+         */
+
+        const Vector& GetShapeFunctions()
+        {
+            return *pNcontainer;
+        };
+
+
+    };
+
+protected:
     ///@name Protected static Member Variables
     ///@{
 
@@ -150,26 +197,14 @@ protected:
     ///@name Protected Operations
     ///@{
 
-    /**
-     * This functions calculates both the RHS and the LHS
-     * @param rLeftHandSideMatrix: The LHS
-     * @param rRightHandSideVector: The RHS
-     * @param rCurrentProcessInfo: The current process info instance
-     * @param CalculateStiffnessMatrixFlag: The flag to set if compute the LHS
-     * @param CalculateResidualVectorFlag: The flag to set if compute the RHS
-     */
-    void CalculateAll(
-        MatrixType& rLeftHandSideMatrix,
-        VectorType& rRightHandSideVector,
-        ProcessInfo& rCurrentProcessInfo,
-        bool CalculateStiffnessMatrixFlag,
-        bool CalculateResidualVectorFlag
-        ) override;
 
     /**
      * It calcules the integration load for the point load
      */
     virtual double GetPointLoadIntegrationWeight();
+
+
+
 
     ///@}
     ///@name Protected  Access
@@ -188,6 +223,8 @@ protected:
     MPMParticleBaseLoadCondition() {};
 
     ///@}
+
+
 
 private:
     ///@name Static Member Variables
