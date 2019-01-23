@@ -179,11 +179,8 @@ public:
         // Create Material Point Element
         this->CreateMaterialPointElement(rNewElement, IsMixedFormulation);
 
-        // Create Grid Based Condition
-        this->CreateGridBasedCondition();
-
-        // Create Particle Based Condition
-        this->CreateParticleBasedCondition();
+        // Create Material Point Condition
+        this->CreateMaterialPointCondition();
 
         // Define a standard static strategy to be used in the calculation
         if(SolutionType == "static" || SolutionType == "Static")
@@ -595,18 +592,11 @@ public:
      * @brief Function to Initiate material point condition.
      * @details It is designed to be called ONCE by the class constructor.
      */
-    virtual void CreateGridBasedCondition()
+    virtual void CreateMaterialPointCondition()
     {
-        mr_mpm_model_part.SetConditions(mr_grid_model_part.pConditions());
-    }
+        // TODO: this if only grid and slip conditions
+            mr_mpm_model_part.SetConditions(mr_grid_model_part.pConditions());
 
-
-    /**
-     * @brief Function to Initiate material point condition.
-     * @details It is designed to be called ONCE by the class constructor.
-     */
-    virtual void CreateParticleBasedCondition()
-    {
         // TODO: this only for particle conditions
         // Initialize zero the variables needed
         array_1d<double,3> xg_c = ZeroVector(3);
@@ -616,9 +606,9 @@ public:
         const unsigned int number_conditions = mr_grid_model_part.NumberOfConditions();
         unsigned int last_condition_id = number_conditions + 1;
 
-        // Loop over the submodelpart of mr_initial_model_part
-        for (ModelPart::SubModelPartIterator submodelpart_it = mr_initial_model_part.SubModelPartsBegin();
-                submodelpart_it != mr_initial_model_part.SubModelPartsEnd(); submodelpart_it++)
+        // Loop over the submodelpart of mr_grid_model_part
+        for (ModelPart::SubModelPartIterator submodelpart_it = mr_grid_model_part.SubModelPartsBegin();
+                    submodelpart_it != mr_grid_model_part.SubModelPartsEnd(); submodelpart_it++)
         {
             ModelPart& submodelpart = *submodelpart_it;
             std::string submodelpart_name = submodelpart.Name();
