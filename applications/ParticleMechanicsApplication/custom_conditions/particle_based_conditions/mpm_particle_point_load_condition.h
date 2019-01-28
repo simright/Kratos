@@ -150,10 +150,6 @@ protected:
     ///@name Protected Operations
     ///@{
 
-    /**
-      * Called to initialize the condition.
-      */
-    void Initialize()override;
 
     /**
      * Initialize Element General Variables
