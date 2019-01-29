@@ -594,10 +594,6 @@ public:
      */
     virtual void CreateMaterialPointCondition()
     {
-        // TODO: this if only grid and slip conditions
-            mr_mpm_model_part.SetConditions(mr_grid_model_part.pConditions());
-
-        // TODO: this only for particle conditions
         // Initialize zero the variables needed
         array_1d<double,3> xg_c = ZeroVector(3);
         array_1d<double,3> f_c = ZeroVector(3);
@@ -614,7 +610,7 @@ public:
             std::string submodelpart_name = submodelpart.Name();
 
 
-            // Loop over the elements of submodelpart's submodelpart and generate mpm condition to be appended to the mr_mpm_model_part
+            // Loop over the conditions
             for (ModelPart::ConditionIterator i = submodelpart.ConditionsBegin();
                     i != submodelpart.ConditionsEnd(); i++)
             {
@@ -624,35 +620,44 @@ public:
 
                 const Geometry< Node < 3 > >& rGeom = i->GetGeometry(); // current condition's connectivity
                 const unsigned int number_of_nodes = rGeom.size();
-
                 const GeometryData::KratosGeometryType rGeoType = rGeom.GetGeometryType();
 
-
-                for ( unsigned int PointNumber = 0; PointNumber < number_of_nodes; PointNumber++ )
+                //Only for particle conditions
+                if (rGeoType == GeometryData::Kratos_Tetrahedra3D4  || rGeoType == GeometryData::Kratos_Triangle2D3 || rGeoType == GeometryData::Kratos_Quadrilateral2D4 || rGeoType == GeometryData::Kratos_Hexahedra3D8)
                 {
                     xg_c.clear();
-                    //if( this->Has( POINT_LOAD ) )
-                    //{
-                    for (unsigned int dim = 0; dim < rGeom.WorkingSpaceDimension(); dim++)
+
+                    for ( unsigned int PointNumber = 0; PointNumber < number_of_nodes; PointNumber++ )
                     {
-                        xg_c[dim] = rGeom[PointNumber].Coordinates()[dim];
-                        //f_c[dim] = this->GetValue( POINT_LOAD );
+                        //TODO: search for the node, which has the condition at the beginning
+                        if (PointNumber == 0)
+                        {
+                            for (unsigned int dim = 0; dim < rGeom.WorkingSpaceDimension(); dim++)
+                            {
+                                xg_c[dim] = rGeom[PointNumber].Coordinates()[dim];
+                            }
+                        }
+
+
                     }
-                    //}
 
+                    KRATOS_WATCH(xg_c);
+
+                    Condition new_condition;
+                    Condition::Pointer p_condition = new_condition.Create(new_condition_id, i->GetGeometry(), properties);
+
+                    p_condition->SetValue(MPC_COORD, xg_c);
+                    p_condition->SetValue(MPC_FORCE, f_c);
+
+                    // Add the MP Condition to the model part
+                    mr_mpm_model_part.GetSubModelPart(submodelpart_name).AddCondition(p_condition);
                 }
-
-                Condition new_condition;
-                Condition::Pointer p_condition = new_condition.Create(new_condition_id, i->GetGeometry(), properties);
-
-                p_condition->SetValue(MPC_COORD, xg_c);
-                p_condition->SetValue(MPC_FORCE, f_c);
-
-                // Add the MP Condition to the model part
-                mr_mpm_model_part.GetSubModelPart(submodelpart_name).AddCondition(p_condition);
-
+                else
+                {
+                    //only grid and slip conditions
+                    mr_mpm_model_part.SetConditions(mr_grid_model_part.pConditions());
+                }
             }
-
         }
     }
 
