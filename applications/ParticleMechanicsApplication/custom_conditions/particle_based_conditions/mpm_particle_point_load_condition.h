@@ -150,7 +150,11 @@ protected:
     ///@name Protected Operations
     ///@{
 
-
+    /**
+     * Called to initialize the element.
+     * Must be called before any calculation is done
+     */
+    void Initialize() override;
     /**
      * Initialize Element General Variables
      */
@@ -162,7 +166,7 @@ protected:
     /**
      * Called at the beginning of each solution step
      */
-    void InitializeSolutionStep(ProcessInfo& rCurrentProcessInfo);
+    void InitializeSolutionStep(ProcessInfo& rCurrentProcessInfo) override;
 
     /**
      * This functions calculates both the RHS and the LHS
@@ -183,7 +187,7 @@ protected:
     /**
      * It calcules the integration load for the point load
      */
-    double GetPointLoadIntegrationWeight();
+    double GetPointLoadIntegrationWeight() override;
 
     /**
      * Calculate Shape Function Values in a given point
@@ -199,7 +203,7 @@ protected:
     /**
      * Sets on rElementalDofList the degrees of freedom of the considered element geometry
      */
-    void GetDofList(DofsVectorType& rElementalDofList, ProcessInfo& rCurrentProcessInfo);
+    void GetDofList(DofsVectorType& rElementalDofList, ProcessInfo& rCurrentProcessInfo) override;
 
     void UpdateGaussPoint(GeneralVariables & rVariables, const ProcessInfo& rCurrentProcessInfo);
 
