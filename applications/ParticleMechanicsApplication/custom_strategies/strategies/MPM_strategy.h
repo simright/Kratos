@@ -35,11 +35,16 @@
 
 // Geometry utilities
 #include "utilities/geometry_utilities.h"
+#include "geometries/triangle_2d_3.h"
+#include "geometries/tetrahedra_3d_4.h"
+#include "geometries/quadrilateral_2d_4.h"
+#include "geometries/hexahedra_3d_8.h"
 
 // Custom includes
 #include "custom_strategies/schemes/MPM_residual_based_bossak_scheme.hpp"
 #include "custom_strategies/strategies/MPM_residual_based_newton_raphson_strategy.hpp"
-#include "custom_elements/updated_lagrangian.hpp"
+#include "custom_conditions/particle_based_conditions/mpm_particle_penalty_dirichlet_condition.h"
+#include "custom_conditions/particle_based_conditions/mpm_particle_point_load_condition.h"
 
 // Core includes
 #include "solving_strategies/schemes/scheme.h"
@@ -422,12 +427,12 @@ public:
         for (ModelPart::SubModelPartIterator submodelpart_it = mr_initial_model_part.SubModelPartsBegin();
                 submodelpart_it != mr_initial_model_part.SubModelPartsEnd(); submodelpart_it++)
         {
-            ModelPart& submodelpart = *submodelpart_it;
+            ModelPart&  submodelpart = *submodelpart_it;
             std::string submodelpart_name = submodelpart.Name();
 
             mr_mpm_model_part.CreateSubModelPart(submodelpart_name);
 
-            // Loop over the element of submodelpart's submodelpart and generate mpm element to be appended to the mr_mpm_model_part
+            // Loop over the element of submodelpart and generate mpm element to be appended to the mr_mpm_model_part
             for (ModelPart::ElementIterator i = submodelpart.ElementsBegin();
                     i != submodelpart.ElementsEnd(); i++)
             {
@@ -449,7 +454,7 @@ public:
                         particles_per_element = 1;
                     }
 
-                    const Geometry< Node < 3 > >& rGeom = i->GetGeometry(); // current element's connectivity
+                    const Geometry< Node < 3 > >& rGeom = i->GetGeometry(); // current element's geometry
                     const GeometryData::KratosGeometryType rGeoType = rGeom.GetGeometryType();
                     Matrix shape_functions_values = rGeom.ShapeFunctionsValues( GeometryData::GI_GAUSS_2);
                     if (rGeoType == GeometryData::Kratos_Tetrahedra3D4  || rGeoType == GeometryData::Kratos_Triangle2D3)
@@ -537,8 +542,10 @@ public:
                     unsigned int new_element_id = 0;
                     for ( unsigned int PointNumber = 0; PointNumber < integration_point_per_elements; PointNumber++ )
                     {
+                        // Create new material point element
                         new_element_id = last_element_id + PointNumber;
                         Element::Pointer p_element = rNewElement.Create(new_element_id, mr_grid_model_part.ElementsBegin()->GetGeometry(), properties);
+
                         const double MP_Density  = density;
                         const int MP_Material_Id = material_id;
 
@@ -581,10 +588,7 @@ public:
                     last_element_id += integration_point_per_elements;
 
                 }
-
-
             }
-
         }
     }
 
