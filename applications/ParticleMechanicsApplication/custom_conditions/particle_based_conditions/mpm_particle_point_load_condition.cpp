@@ -69,29 +69,17 @@ namespace Kratos
 
     void MPMParticlePointLoadCondition::Initialize()
     {
-        const unsigned int NumberOfNodes = GetGeometry().size();
-        const unsigned int Dimension = GetGeometry().WorkingSpaceDimension();
+        auto& rGeom = this->GetGeometry(); // current condition's geometry
+        const GeometryData::KratosGeometryType rGeoType = rGeom.GetGeometryType();
 
         // Vector with a loading applied to the condition
         array_1d<double, 3 > PointLoad = ZeroVector(3);
-        if( this->Has( POINT_LOAD ) )
-        {
-            for (unsigned int ii = 0; ii < NumberOfNodes; ++ii)
-            {
-                const unsigned int base = ii*Dimension;
-                //TODO: PointLoad should be possible at all nodes not only at the first node
-                if (ii == 0)
-                {
-                    if( GetGeometry()[ii].SolutionStepsDataHas( POINT_LOAD ) )
-                    {
-                        noalias(PointLoad) = GetGeometry()[ii].FastGetSolutionStepValue( POINT_LOAD );
-                    }
-                }
+        /* if( this->Has( POINT_LOAD ) )
+        { */
+        /* noalias(PointLoad) = rGeom.FastGetSolutionStepValue( POINT_LOAD );
 
-
-            }
-        }
-        this->SetValue(MPC_FORCE, PointLoad);
+        this->SetValue(MPC_FORCE, PointLoad); */
+        KRATOS_WATCH(PointLoad);
     }
     void MPMParticlePointLoadCondition::InitializeGeneralVariables (GeneralVariables& rVariables, const ProcessInfo& rCurrentProcessInfo)
     {

@@ -35,16 +35,10 @@
 
 // Geometry utilities
 #include "utilities/geometry_utilities.h"
-#include "geometries/triangle_2d_3.h"
-#include "geometries/tetrahedra_3d_4.h"
-#include "geometries/quadrilateral_2d_4.h"
-#include "geometries/hexahedra_3d_8.h"
 
 // Custom includes
 #include "custom_strategies/schemes/MPM_residual_based_bossak_scheme.hpp"
 #include "custom_strategies/strategies/MPM_residual_based_newton_raphson_strategy.hpp"
-#include "custom_conditions/particle_based_conditions/mpm_particle_penalty_dirichlet_condition.h"
-#include "custom_conditions/particle_based_conditions/mpm_particle_point_load_condition.h"
 
 // Core includes
 #include "solving_strategies/schemes/scheme.h"
@@ -639,10 +633,10 @@ public:
                             i != submodelpart.ConditionsEnd(); i++)
                     {
                         Properties::Pointer properties = i->pGetProperties();
+                        const int MPC_Condition_Id = i->GetProperties().Id();
 
                         // Flag whether condition is Neumann or Dirichlet
                         const bool is_neumann_condition = i->GetValue(MPC_IS_NEUMANN);
-                        Condition::Pointer new_condition;
 
                         // Check number of particles per condition to be created
                         unsigned int particles_per_condition = 0; // Default zero
@@ -664,6 +658,11 @@ public:
                         auto& rGeom = i->GetGeometry(); // current condition's geometry
                         const GeometryData::KratosGeometryType rGeoType = rGeom.GetGeometryType();
                         Matrix shape_functions_values;
+
+                        //Get geometry of the background grid
+                        std::string condition_type_name;
+                        const GeometryData::KratosGeometryType rBackgroundGeoType = mr_grid_model_part.ElementsBegin()->GetGeometry().GetGeometryType();
+
                         if (rGeoType == GeometryData::Kratos_Point2D  || rGeoType == GeometryData::Kratos_Point3D)
                         {
                             switch (particles_per_condition)
@@ -683,7 +682,18 @@ public:
 
                             if(is_neumann_condition)
                             {
-                                //KRATOS_ERROR << "Particle point load condition is not yet implemented." << std::endl;
+                                if (TDim==2){
+                                    if (rBackgroundGeoType == GeometryData::Kratos_Triangle2D3)
+                                        condition_type_name = "MPMParticlePointLoadCondition2D3N";
+                                    else if (rBackgroundGeoType == GeometryData::Kratos_Quadrilateral2D4)
+                                        condition_type_name = "MPMParticlePointLoadCondition2D4N";
+                                }
+                                else if (TDim==3){
+                                    if (rBackgroundGeoType == GeometryData::Kratos_Tetrahedra3D4)
+                                        condition_type_name = "MPMParticlePointLoadCondition3D4N";
+                                    else if (rBackgroundGeoType == GeometryData::Kratos_Hexahedra3D8)
+                                        condition_type_name = "MPMParticlePointLoadCondition3D8N";
+                                }
                             }
 
 
@@ -806,41 +816,30 @@ public:
                         // Number of integration point per condition
                         const unsigned int integration_point_per_conditions = shape_functions_values.size1();
 
-                        // Evaluation of element area/volume
+                        // Evaluation of geometric area/volume
                         const double area = rGeom.Area();
                         MPC_Area = area / (rGeom.size() + integration_point_per_conditions);
 
                         // If dirichlet boundary
-                        const GeometryData::KratosGeometryType rBackgroundGeoType = mr_grid_model_part.ElementsBegin()->GetGeometry().GetGeometryType();
+                        //std::string condition_type_name;
+                        //const GeometryData::KratosGeometryType rBackgroundGeoType = mr_grid_model_part.ElementsBegin()->GetGeometry().GetGeometryType();
                         if (!is_neumann_condition){
                             if (TDim==2){
                                 if (rBackgroundGeoType == GeometryData::Kratos_Triangle2D3)
-                                    new_condition = Kratos::make_shared<MPMParticlePenaltyDirichletCondition>(0, Condition::GeometryType::Pointer(new Triangle2D3<Node<3>>(Condition::GeometryType::PointsArrayType(3))));
+                                    condition_type_name = "MPMParticlePenaltyDirichletCondition2D3N";
                                 else if (rBackgroundGeoType == GeometryData::Kratos_Quadrilateral2D4)
-                                    new_condition = Kratos::make_shared<MPMParticlePenaltyDirichletCondition>(0, Condition::GeometryType::Pointer(new Tetrahedra3D4<Node<3>>(Condition::GeometryType::PointsArrayType(4))));
+                                    condition_type_name = "MPMParticlePenaltyDirichletCondition2D4N";
                             }
                             else if (TDim==3){
                                 if (rBackgroundGeoType == GeometryData::Kratos_Tetrahedra3D4)
-                                    new_condition = Kratos::make_shared<MPMParticlePenaltyDirichletCondition>(0, Condition::GeometryType::Pointer(new Quadrilateral2D4<Node<3>>(Condition::GeometryType::PointsArrayType(4))));
+                                    condition_type_name = "MPMParticlePenaltyDirichletCondition3D4N";
                                 else if (rBackgroundGeoType == GeometryData::Kratos_Hexahedra3D8)
-                                    new_condition = Kratos::make_shared<MPMParticlePenaltyDirichletCondition>(0, Condition::GeometryType::Pointer(new Hexahedra3D8<Node<3>>(Condition::GeometryType::PointsArrayType(8))));
+                                    condition_type_name = "MPMParticlePenaltyDirichletCondition3D8N";
                             }
                         }
 
-                        if (is_neumann_condition){
-                            if (TDim==2){
-                                if (rBackgroundGeoType == GeometryData::Kratos_Triangle2D3)
-                                    new_condition = Kratos::make_shared<MPMParticlePointLoadCondition>(0, Condition::GeometryType::Pointer(new Triangle2D3<Node<3>>(Condition::GeometryType::PointsArrayType(3))));
-                                else if (rBackgroundGeoType == GeometryData::Kratos_Quadrilateral2D4)
-                                    new_condition = Kratos::make_shared<MPMParticlePointLoadCondition>(0, Condition::GeometryType::Pointer(new Tetrahedra3D4<Node<3>>(Condition::GeometryType::PointsArrayType(4))));
-                            }
-                            else if (TDim==3){
-                                if (rBackgroundGeoType == GeometryData::Kratos_Tetrahedra3D4)
-                                    new_condition = Kratos::make_shared<MPMParticlePointLoadCondition>(0, Condition::GeometryType::Pointer(new Quadrilateral2D4<Node<3>>(Condition::GeometryType::PointsArrayType(4))));
-                                else if (rBackgroundGeoType == GeometryData::Kratos_Hexahedra3D8)
-                                    new_condition = Kratos::make_shared<MPMParticlePointLoadCondition>(0, Condition::GeometryType::Pointer(new Hexahedra3D8<Node<3>>(Condition::GeometryType::PointsArrayType(8))));
-                            }
-                        }
+                        // Get new condition
+                        const Condition& new_condition = KratosComponents<Condition>::Get(condition_type_name);
 
                         // 1. Loop over the conditions to create inner particle condition
                         unsigned int new_condition_id = 0;
@@ -848,7 +847,7 @@ public:
                         {
                             // Create new material point condition
                             new_condition_id = last_condition_id + PointNumber;
-                            Condition::Pointer p_condition = (*new_condition).Create(new_condition_id, mr_grid_model_part.ElementsBegin()->GetGeometry(), properties);
+                            Condition::Pointer p_condition = new_condition.Create(new_condition_id, mr_grid_model_part.ElementsBegin()->GetGeometry(), properties);
 
                             mpc_xg.clear();
 
@@ -861,6 +860,7 @@ public:
                             }
 
                             // Setting particle condition's initial condition
+                            p_condition->SetValue(MPC_CONDITION_ID, MPC_Condition_Id);
                             p_condition->SetValue(MPC_COORD, mpc_xg);
                             p_condition->SetValue(MPC_AREA, MPC_Area);
                             p_condition->SetValue(MPC_NORMAL, MPC_Normal);
@@ -879,7 +879,7 @@ public:
                             {
                                 // Create new material point condition
                                 new_condition_id = last_condition_id + j;
-                                Condition::Pointer p_condition = (*new_condition).Create(new_condition_id, mr_grid_model_part.ElementsBegin()->GetGeometry(), properties);
+                                Condition::Pointer p_condition = new_condition.Create(new_condition_id, mr_grid_model_part.ElementsBegin()->GetGeometry(), properties);
 
                                 mpc_xg.clear();
                                 for (unsigned int dim = 0; dim < rGeom.WorkingSpaceDimension(); dim++){
@@ -887,6 +887,7 @@ public:
                                 }
 
                                 // Setting particle condition's initial condition
+                                p_condition->SetValue(MPC_CONDITION_ID, MPC_Condition_Id);
                                 p_condition->SetValue(MPC_COORD, mpc_xg);
                                 p_condition->SetValue(MPC_AREA, MPC_Area);
                                 p_condition->SetValue(MPC_NORMAL, MPC_Normal);
@@ -906,76 +907,6 @@ public:
         }
     }
 
-
-    /* *
-     * @brief Function to Initiate material point condition.
-     * @details It is designed to be called ONCE by the class constructor.
-     */
-    /* virtual void CreateMaterialPointCondition()
-    {
-        // Initialize zero the variables needed
-        array_1d<double,3> xg_c = ZeroVector(3);
-        array_1d<double,3> f_c = ZeroVector(3);
-
-        // Determine condition index
-        const unsigned int number_conditions = mr_grid_model_part.NumberOfConditions();
-        unsigned int last_condition_id = number_conditions + 1;
-
-        // Loop over the submodelpart of mr_grid_model_part
-        for (ModelPart::SubModelPartIterator submodelpart_it = mr_grid_model_part.SubModelPartsBegin();
-                    submodelpart_it != mr_grid_model_part.SubModelPartsEnd(); submodelpart_it++)
-        {
-            ModelPart& submodelpart = *submodelpart_it;
-            std::string submodelpart_name = submodelpart.Name();
-
-
-            // Loop over the conditions
-            for (ModelPart::ConditionIterator i = submodelpart.ConditionsBegin();
-                    i != submodelpart.ConditionsEnd(); i++)
-            {
-                unsigned int new_condition_id = last_condition_id + 1;
-
-                Properties::Pointer properties = i->pGetProperties();
-
-                const Geometry< Node < 3 > >& rGeom = i->GetGeometry(); // current condition's connectivity
-                const unsigned int number_of_nodes = rGeom.size();
-                const GeometryData::KratosGeometryType rGeoType = rGeom.GetGeometryType();
-
-                //Only for particle conditions
-                if (rGeoType == GeometryData::Kratos_Tetrahedra3D4  || rGeoType == GeometryData::Kratos_Triangle2D3 || rGeoType == GeometryData::Kratos_Quadrilateral2D4 || rGeoType == GeometryData::Kratos_Hexahedra3D8)
-                {
-                    xg_c.clear();
-
-                    for ( unsigned int PointNumber = 0; PointNumber < number_of_nodes; PointNumber++ )
-                    {
-                        //TODO: search for the node, which has the condition at the beginning
-                        if (PointNumber == 0)
-                        {
-                            for (unsigned int dim = 0; dim < rGeom.WorkingSpaceDimension(); dim++)
-                            {
-                                xg_c[dim] = rGeom[PointNumber].Coordinates()[dim];
-                            }
-                        }
-
-                    }
-
-                    Condition new_condition;
-                    Condition::Pointer p_condition = new_condition.Create(new_condition_id, rGeom, properties);
-
-                    p_condition->SetValue(MPC_COORD, xg_c);
-                    p_condition->SetValue(MPC_FORCE, f_c);
-
-                    // Add the MP Condition to the model part
-                    mr_mpm_model_part.GetSubModelPart(submodelpart_name).AddCondition(p_condition);
-                }
-                else
-                {
-                    //only grid and slip conditions
-                    mr_mpm_model_part.SetConditions(mr_grid_model_part.pConditions());
-                }
-            }
-        }
-    } */
 
     /**
      * @brief Function that return matrix of shape function value for 16 particles.

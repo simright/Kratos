@@ -48,6 +48,46 @@ namespace Kratos
 class MPMParticleBaseDirichletCondition
     : public Condition
 {
+
+protected:
+
+    /**
+     * Parameters to be used in the Conditions as they are. Direct interface to Parameters Struct
+     */
+
+    struct GeneralVariables
+    {
+    private:
+
+        // Variables including all integration points
+        const Matrix* pDN_De;
+        const Vector* pNcontainer;
+
+    public:
+
+        // For axisymmetric use only
+        double  CurrentRadius;
+        double  ReferenceRadius;
+
+        // General variables for large displacement use
+        double  detF;
+        double  detF0;
+        double  detFT;
+        Vector  StrainVector;
+        Vector  StressVector;
+        Vector  N;
+        Matrix  B;
+        Matrix  F;
+        Matrix  FT;
+        Matrix  F0;
+        Matrix  DN_DX;
+        Matrix  DN_De;
+        Matrix  PenaltyConstitutiveMatrix;
+
+        // Variables including all integration points
+        Matrix CurrentDisp;
+    };
+
 public:
 
     ///@name Type Definitions
@@ -211,20 +251,6 @@ public:
         ProcessInfo& rCurrentProcessInfo
         ) override;
 
-     /**
-     * this function is designed to make the element to assemble an rRHS vector
-     * identified by a variable rRHSVariable by assembling it to the nodes on the variable
-     * rDestinationVariable.
-     * @param rRHSVector input variable containing the RHS vector to be assembled
-     * @param rRHSVariable variable describing the type of the RHS vector to be assembled
-     * @param rDestinationVariable variable in the database to which the rRHSvector will be assembled
-      * @param rCurrentProcessInfo the current process info instance
-     */
-    void AddExplicitContribution(const VectorType& rRHS,
-        const Variable<VectorType>& rRHSVariable,
-        Variable<array_1d<double,3> >& rDestinationVariable,
-        const ProcessInfo& rCurrentProcessInfo) override;
-
     /**
      * This function provides the place to perform checks on the completeness of the input.
      * It is designed to be called only once (or anyway, not often) typically at the beginning
@@ -284,6 +310,10 @@ protected:
     ///@name Protected member Variables
     ///@{
 
+    double mDeterminantF0;
+
+    Matrix mDeformationGradientF0;
+
     ///@}
     ///@name Protected Operators
     ///@{
@@ -309,16 +339,15 @@ protected:
         );
 
     /**
-     * This functions computes the integration weight to consider
-     * @param IntegrationPoints: The array containing the integration points
-     * @param PointNumber: The id of the integration point considered
-     * @param detJ: The determinant of the jacobian of the element
+     * This functions returns the integration weight to consider, which is the MPC_Area
      */
-    virtual double GetIntegrationWeight(
-        const GeometryType::IntegrationPointsArrayType& IntegrationPoints,
-        const unsigned int PointNumber,
-        const double detJ
-        );
+    virtual double GetIntegrationWeight();
+
+    /**
+     * Calculate Shape Function Values in a given point
+     */
+
+    virtual Vector& MPMShapeFunctionPointValues(Vector& rResult, const array_1d<double,3>& rPoint);
 
     ///@}
     ///@name Protected  Access
