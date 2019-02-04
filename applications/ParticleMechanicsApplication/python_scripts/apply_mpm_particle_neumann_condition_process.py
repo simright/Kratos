@@ -4,10 +4,10 @@ import KratosMultiphysics.ParticleMechanicsApplication as KratosParticle
 def Factory(settings, Model):
     if(not isinstance(settings, KratosMultiphysics.Parameters)):
         raise Exception("expected input shall be a Parameters object, encapsulating a json string")
-    return ApplyMPMParticleDirichletConditionProcess(Model, settings["Parameters"])
+    return ApplyMPMParticleNeumannConditionProcess(Model, settings["Parameters"])
 
 ## All the processes python should be derived from "Process"
-class ApplyMPMParticleDirichletConditionProcess(KratosMultiphysics.Process):
+class ApplyMPMParticleNeumannConditionProcess(KratosMultiphysics.Process):
     def __init__(self, Model, settings ):
         KratosMultiphysics.Process.__init__(self)
 
@@ -15,9 +15,7 @@ class ApplyMPMParticleDirichletConditionProcess(KratosMultiphysics.Process):
             {
                 "model_part_name"           : "PLEASE_SPECIFY_MODEL_PART_NAME",
                 "particles_per_condition"   : 0,
-                "imposition_type"           : "penalty",
-                "penalty_factor"            : 0,
-                "variable_name"             : "DISPLACEMENT",
+                "variable_name"             : "PLEASE_SPECIFY_LOADING_CONDITION",
                 "modulus"                   : 1.0,
                 "constrained"               : "fixed",
                 "direction"                 : [0.0, 0.0, 0.0],
@@ -28,35 +26,22 @@ class ApplyMPMParticleDirichletConditionProcess(KratosMultiphysics.Process):
 
         self.model_part = Model[settings["model_part_name"].GetString()]
         self.particles_per_condition = settings["particles_per_condition"].GetInt()
-        self.imposition_type = settings["imposition_type"].GetString()
-        self.is_neumann_boundary = False
-
-        # set type of boundary
-        if (self.imposition_type == "penalty" or self.imposition_type == "Penalty"):
-            self.penalty_factor = settings["penalty_factor"].GetDouble()
-        else:
-            err_msg =  "The requested type of Dirichlet boundary imposition: \"" + self.imposition_type + "\" is not available!\n"
-            err_msg += "Available option is: \"penalty\"."
-            raise Exception(err_msg)
+        self.is_neumann_boundary = True
 
         # check constraint
         self.constrained = settings["constrained"].GetString()
-        self.is_slip_boundary = False
-        self.is_contact_boundary = False
         if (self.constrained == "fixed"):
-            pass
-        elif (self.constrained == "contact"):
-            self.is_contact_boundary = True
-        elif (self.constrained == "slip"):
-            self.is_slip_boundary = True
+            self.normal_following_load = False
+        elif (self.constrained == "normal"):
+            self.normal_following_load = True
         else:
             err_msg =  "The requested type of constrain: \"" + self.constrained + "\" is not available!\n"
-            err_msg += "Available options are: \"fixed\", \"contact\" and \"slip\"."
+            err_msg += "Available options are: \"fixed\" and \"normal\"."
             raise Exception(err_msg)
 
         # get variable imposed and check
         variable_name = settings["variable_name"].GetString()
-        variable_name_list = ["DISPLACEMENT","VELOCITY","ACCELERATION"]
+        variable_name_list = ["POINT_LOAD","LINE_LOAD","SURFACE_LOAD"]
         if(variable_name in variable_name_list):
             self.variable = KratosMultiphysics.KratosGlobals.GetVariable(variable_name)
         else:
@@ -77,13 +62,11 @@ class ApplyMPMParticleDirichletConditionProcess(KratosMultiphysics.Process):
 
             for condition in self.model_part.Conditions:
                 condition.Set(KratosMultiphysics.BOUNDARY, True)
-                condition.Set(KratosMultiphysics.SLIP, self.is_slip_boundary)
-                condition.Set(KratosMultiphysics.CONTACT, self.is_contact_boundary)
+                condition.Set(KratosMultiphysics.MODIFIED, self.normal_following_load)
                 condition.SetValue(KratosParticle.PARTICLES_PER_CONDITION, self.particles_per_condition)
                 condition.SetValue(KratosParticle.MPC_IS_NEUMANN, self.is_neumann_boundary)
-                condition.SetValue(KratosParticle.PENALTY_FACTOR, self.penalty_factor)
                 condition.SetValue(self.variable, self.vector)
         else:
-            err_msg = '\n::[ApplyMPMParticleDirichletConditionProcess]:: W-A-R-N-I-N-G: You have specified invalid "particles_per_condition", '
+            err_msg = '\n::[ApplyMPMParticleNeumannConditionProcess]:: W-A-R-N-I-N-G: You have specified invalid "particles_per_condition", '
             err_msg += 'or assigned negative values. \nPlease assign: "particles_per_condition" > 0 or = 0 (for automatic value)!\n'
             raise Exception(err_msg)

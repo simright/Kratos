@@ -408,9 +408,10 @@ public:
         double MP_Mass;
         double MP_Volume;
 
-        // Determine element index
+        // Determine element index: This convention is done in order for the purpose of visualization in GiD
         const unsigned int number_elements = mr_grid_model_part.NumberOfElements() + mr_initial_model_part.NumberOfElements();
-        unsigned int last_element_id = number_elements + 1;
+        const unsigned int number_nodes = mr_grid_model_part.NumberOfNodes();
+        unsigned int last_element_id = (number_nodes > number_elements) ? (number_nodes + 1) : (number_elements+1);
 
         // Loop over the submodelpart of mr_initial_model_part
         for (ModelPart::SubModelPartIterator submodelpart_it = mr_initial_model_part.SubModelPartsBegin();
@@ -597,9 +598,17 @@ public:
         double MPC_Area = 0.0;
         double MPC_Penalty_Factor = 0.0;
 
-        // Determine condition index
+        // Determine condition index: This convention is done in order for the purpose of visualization in GiD
         const unsigned int number_conditions = mr_grid_model_part.NumberOfConditions();
-        unsigned int last_condition_id = number_conditions + 1;
+        const unsigned int number_elements = mr_grid_model_part.NumberOfElements() + mr_initial_model_part.NumberOfElements() + mr_mpm_model_part.NumberOfElements();
+        const unsigned int number_nodes = mr_grid_model_part.NumberOfNodes();
+        unsigned int last_condition_id;
+        if (number_elements > number_nodes && number_elements > number_conditions)
+            last_condition_id = number_elements + 1;
+        else if (number_nodes > number_elements && number_nodes > number_conditions)
+            last_condition_id = number_nodes + 1;
+        else
+            last_condition_id = number_conditions + 1;
 
         // Loop over the submodelpart of mr_grid_model_part
         for (ModelPart::SubModelPartIterator submodelpart_it = mr_grid_model_part.SubModelPartsBegin();
@@ -829,6 +838,7 @@ public:
                         if (i->Has(PENALTY_FACTOR))
                             MPC_Penalty_Factor = i->GetValue(PENALTY_FACTOR);
                         const bool is_slip = i->Is(SLIP);
+                        const bool is_contact = i->Is(CONTACT);
 
                         // If dirichlet boundary
                         //std::string condition_type_name;
@@ -870,7 +880,7 @@ public:
                             }
 
                             // Setting particle condition's initial condition
-                            // NOTE: If any variable is added or remove here, please add and remove also at the second loop below
+                            // TODO: If any variable is added or remove here, please add and remove also at the second loop below
                             p_condition->SetValue(MPC_CONDITION_ID, MPC_Condition_Id);
                             p_condition->SetValue(MPC_COORD, mpc_xg);
                             p_condition->SetValue(MPC_AREA, MPC_Area);
@@ -881,6 +891,8 @@ public:
                             p_condition->SetValue(PENALTY_FACTOR, MPC_Penalty_Factor);
                             if (is_slip)
                                 p_condition->Set(SLIP);
+                            if (is_contact)
+                                p_condition->Set(CONTACT);
 
                             // Add the MP Condition to the model part
                             mr_mpm_model_part.GetSubModelPart(submodelpart_name).AddCondition(p_condition);
@@ -909,7 +921,7 @@ public:
                                 }
 
                                 // Setting particle condition's initial condition
-                                // NOTE: If any variable is added or remove here, please add and remove also at the first loop above
+                                // TODO: If any variable is added or remove here, please add and remove also at the first loop above
                                 p_condition->SetValue(MPC_CONDITION_ID, MPC_Condition_Id);
                                 p_condition->SetValue(MPC_COORD, mpc_xg);
                                 p_condition->SetValue(MPC_AREA, MPC_Area);
@@ -920,6 +932,8 @@ public:
                                 p_condition->SetValue(PENALTY_FACTOR, MPC_Penalty_Factor);
                                 if (is_slip)
                                     p_condition->Set(SLIP);
+                                if (is_contact)
+                                    p_condition->Set(CONTACT);
 
                                 // Add the MP Condition to the model part
                                 mr_mpm_model_part.GetSubModelPart(submodelpart_name).AddCondition(p_condition);
