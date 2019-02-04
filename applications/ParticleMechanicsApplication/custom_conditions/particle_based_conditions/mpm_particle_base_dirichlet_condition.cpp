@@ -35,51 +35,27 @@ void MPMParticleBaseDirichletCondition::Initialize()
 //************************************************************************************
 //************************************************************************************
 
-void MPMParticleBaseDirichletCondition::InitializeSolutionStep( ProcessInfo& CurrentProcessInfo )
+void MPMParticleBaseDirichletCondition::InitializeSolutionStep( ProcessInfo& rCurrentProcessInfo )
 {
     /* NOTE:
     In the InitializeSolutionStep of each time step the nodal initial conditions are evaluated.
     This function is called by the base scheme class.*/
-    GeometryType& rGeom = GetGeometry();
-    const unsigned int dimension = rGeom.WorkingSpaceDimension();
-    const unsigned int number_of_nodes = rGeom.PointsNumber();
-    const array_1d<double,3> & xg_c = this->GetValue(MPC_COORD);
-    GeneralVariables Variables;
+    mFinalizedStep = false;
 
-    // Calculating shape function
-    Variables.N = this->MPMShapeFunctionPointValues(Variables.N, xg_c);
+    // Here MPC_DISPLACEMENT is updated in terms of velocity and acceleration is added
+    array_1d<double,3>& MPC_Displacement = this->GetValue(MPC_DISPLACEMENT);
+    array_1d<double,3>& MPC_Velocity = this->GetValue(MPC_VELOCITY);
+    const array_1d<double,3>& MPC_Acceleration = this->GetValue(MPC_ACCELERATION);
+    const double& delta_time = rCurrentProcessInfo[DELTA_TIME];
 
-    // mFinalizedStep = false;
-
-    // const array_1d<double,3>& MPC_Velocity = this->GetValue(MPC_VELOCITY);
-
-    // // Here MP contribution in terms of momentum, inertia and mass are added
-    // for ( unsigned int i = 0; i < number_of_nodes; i++ )
-    // {
-    //     for (unsigned int j = 0; j < dimension; j++)
-    //     {
-    //         // nodal_momentum[j] = Variables.N[i] * (MP_Velocity[j] - AUX_MP_Velocity[j]) * MP_Mass;
-    //         // nodal_inertia[j] = Variables.N[i] * (MP_Acceleration[j] - AUX_MP_Acceleration[j]) * MP_Mass;
-
-    //     }
-
-    //     // rGeom[i].SetLock();
-    //     // rGeom[i].FastGetSolutionStepValue(NODAL_MOMENTUM, 0) += nodal_momentum;
-    //     // rGeom[i].FastGetSolutionStepValue(NODAL_INERTIA, 0)  += nodal_inertia;
-
-    //     // rGeom[i].FastGetSolutionStepValue(NODAL_MASS, 0) += Variables.N[i] * MP_Mass;
-    //     // rGeom[i].UnSetLock();
-
-    // }
-
-    // // AUX_MP_Velocity.clear();
-    // // AUX_MP_Acceleration.clear();
+    MPC_Displacement += (MPC_Velocity * delta_time) + (0.5 * MPC_Acceleration * delta_time * delta_time);
+    MPC_Velocity += (MPC_Acceleration * delta_time);
 }
 
 //************************************************************************************
 //************************************************************************************
 
-void MPMParticleBaseDirichletCondition::InitializeNonLinearIteration( ProcessInfo& CurrentProcessInfo )
+void MPMParticleBaseDirichletCondition::InitializeNonLinearIteration( ProcessInfo& rCurrentProcessInfo )
 {
     // TODO: Add something if necessary
 }
@@ -87,7 +63,7 @@ void MPMParticleBaseDirichletCondition::InitializeNonLinearIteration( ProcessInf
 //************************************************************************************
 //************************************************************************************
 
-void MPMParticleBaseDirichletCondition::FinalizeNonLinearIteration( ProcessInfo& CurrentProcessInfo )
+void MPMParticleBaseDirichletCondition::FinalizeNonLinearIteration( ProcessInfo& rCurrentProcessInfo )
 {
     // TODO: Add something if necessary
 }
@@ -95,21 +71,20 @@ void MPMParticleBaseDirichletCondition::FinalizeNonLinearIteration( ProcessInfo&
 //************************************************************************************
 //************************************************************************************
 
-void MPMParticleBaseDirichletCondition::FinalizeSolutionStep( ProcessInfo& CurrentProcessInfo )
+void MPMParticleBaseDirichletCondition::FinalizeSolutionStep( ProcessInfo& rCurrentProcessInfo )
 {
     KRATOS_TRY
 
-    // // Create and initialize element variables:
-    // GeneralVariables Variables;
-    // this->InitializeGeneralVariables(Variables,rCurrentProcessInfo);
+    // Update the MPC Position
+    const array_1d<double,3> & xg_c = this->GetValue(MPC_COORD);
+    array_1d<double,3> & displacement = this->GetValue(MPC_DISPLACEMENT);
+    const array_1d<double,3> & new_xg_c = xg_c + displacement ;
+    this -> SetValue(MPC_COORD,new_xg_c);
 
-    // // Compute element kinematics B, F, DN_DX ...
-    // this->CalculateKinematics(Variables, rCurrentProcessInfo);
+    // Set displacement to zero (NOTE: to use incremental displacement, use MPC_VELOCITY)
+    displacement.clear();
 
-    // // Call the element internal variables update
-    // this->FinalizeStepVariables(Variables, rCurrentProcessInfo);
-
-    // mFinalizedStep = true;
+    mFinalizedStep = true;
 
     KRATOS_CATCH( "" )
 }
@@ -438,6 +413,36 @@ Vector& MPMParticleBaseDirichletCondition::MPMShapeFunctionPointValues(Vector& r
     }
 
     return rResult;
+
+    KRATOS_CATCH( "" )
+}
+
+//*************************COMPUTE CURRENT DISPLACEMENT*******************************
+//************************************************************************************
+/*
+This function convert the computed nodal displacement into matrix of (number_of_nodes, dimension)
+*/
+Matrix& MPMParticleBaseDirichletCondition::CalculateCurrentDisp(Matrix & rCurrentDisp, const ProcessInfo& rCurrentProcessInfo)
+{
+    KRATOS_TRY
+
+    GeometryType& rGeom = GetGeometry();
+    const unsigned int number_of_nodes = rGeom.PointsNumber();
+    const unsigned int dimension = rGeom.WorkingSpaceDimension();
+
+    rCurrentDisp = ZeroMatrix(number_of_nodes, dimension);
+
+    for ( unsigned int i = 0; i < number_of_nodes; i++ )
+    {
+        const array_1d<double, 3 > & current_displacement  = rGeom[i].FastGetSolutionStepValue(DISPLACEMENT);
+
+        for ( unsigned int j = 0; j < dimension; j++ )
+        {
+            rCurrentDisp(i,j) = current_displacement[j];
+        }
+    }
+
+    return rCurrentDisp;
 
     KRATOS_CATCH( "" )
 }

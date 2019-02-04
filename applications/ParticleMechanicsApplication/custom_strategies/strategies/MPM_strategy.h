@@ -590,9 +590,12 @@ public:
         // Initialize zero the variables needed
         array_1d<double,3> mpc_xg = ZeroVector(3);
         array_1d<double,3> MPC_Normal = ZeroVector(3);
-        array_1d<double,3> MPC_Imposed_Displacement = ZeroVector(3);
+        array_1d<double,3> MPC_Displacement = ZeroVector(3);
+        array_1d<double,3> MPC_Velocity = ZeroVector(3);
+        array_1d<double,3> MPC_Acceleration = ZeroVector(3);
 
         double MPC_Area = 0.0;
+        double MPC_Penalty_Factor = 0.0;
 
         // Determine condition index
         const unsigned int number_conditions = mr_grid_model_part.NumberOfConditions();
@@ -611,7 +614,7 @@ public:
                 mr_mpm_model_part.CreateSubModelPart(submodelpart_name);
 
                 // For regular conditions: straight copy all conditions
-                if (submodelpart.ConditionsBegin()->Is(BOUNDARY) == false){
+                if (!submodelpart.ConditionsBegin()->Is(BOUNDARY)){
                     mr_mpm_model_part.SetConditions(submodelpart.pConditions());
                     mr_mpm_model_part.GetSubModelPart(submodelpart_name).SetConditions(submodelpart.pConditions());
                 }
@@ -647,7 +650,8 @@ public:
                         // Get condition variables:
                         // Normal vector (normalized)
                         MPC_Normal = i->GetValue(NORMAL);
-                        MPC_Normal *= 1.0 / std::sqrt(MPC_Normal[0]*MPC_Normal[0] + MPC_Normal[1]*MPC_Normal[1] + MPC_Normal[2]*MPC_Normal[2]);
+                        const double denominator = std::sqrt(MPC_Normal[0]*MPC_Normal[0] + MPC_Normal[1]*MPC_Normal[1] + MPC_Normal[2]*MPC_Normal[2]);
+                        if (std::abs(denominator) > std::numeric_limits<double>::epsilon() ) MPC_Normal *= 1.0 / denominator;
 
                         // Get shape_function_values from defined particle_per_condition
                         auto& rGeom = i->GetGeometry(); // current condition's geometry
@@ -811,9 +815,20 @@ public:
                         // Number of integration point per condition
                         const unsigned int integration_point_per_conditions = shape_functions_values.size1();
 
-                        // Evaluation of geometric area/volume
+                        // Evaluation of geometric length/area
                         const double area = rGeom.Area();
                         MPC_Area = area / (rGeom.size() + integration_point_per_conditions);
+
+                        // Check condition variables
+                        if (i->Has(DISPLACEMENT))
+                            MPC_Displacement = i->GetValue(DISPLACEMENT);
+                        if (i->Has(VELOCITY))
+                            MPC_Velocity = i->GetValue(VELOCITY);
+                        if (i->Has(ACCELERATION))
+                            MPC_Acceleration = i->GetValue(ACCELERATION);
+                        if (i->Has(PENALTY_FACTOR))
+                            MPC_Penalty_Factor = i->GetValue(PENALTY_FACTOR);
+                        const bool is_slip = i->Is(SLIP);
 
                         // If dirichlet boundary
                         //std::string condition_type_name;
@@ -855,10 +870,17 @@ public:
                             }
 
                             // Setting particle condition's initial condition
+                            // NOTE: If any variable is added or remove here, please add and remove also at the second loop below
                             p_condition->SetValue(MPC_CONDITION_ID, MPC_Condition_Id);
                             p_condition->SetValue(MPC_COORD, mpc_xg);
                             p_condition->SetValue(MPC_AREA, MPC_Area);
                             p_condition->SetValue(MPC_NORMAL, MPC_Normal);
+                            p_condition->SetValue(MPC_DISPLACEMENT, MPC_Displacement);
+                            p_condition->SetValue(MPC_VELOCITY, MPC_Velocity);
+                            p_condition->SetValue(MPC_ACCELERATION, MPC_Acceleration);
+                            p_condition->SetValue(PENALTY_FACTOR, MPC_Penalty_Factor);
+                            if (is_slip)
+                                p_condition->Set(SLIP);
 
                             // Add the MP Condition to the model part
                             mr_mpm_model_part.GetSubModelPart(submodelpart_name).AddCondition(p_condition);
@@ -872,8 +894,13 @@ public:
                         {
                             if (!rGeom[j].Is(VISITED))
                             {
+                                // Nodal normal vector is used
+                                MPC_Normal = rGeom[j].FastGetSolutionStepValue(NORMAL);
+                                const double denominator = std::sqrt(MPC_Normal[0]*MPC_Normal[0] + MPC_Normal[1]*MPC_Normal[1] + MPC_Normal[2]*MPC_Normal[2]);
+                                if (std::abs(denominator) > std::numeric_limits<double>::epsilon() ) MPC_Normal *= 1.0 / denominator;
+
                                 // Create new material point condition
-                                new_condition_id = last_condition_id + j;
+                                new_condition_id = last_condition_id;
                                 Condition::Pointer p_condition = new_condition.Create(new_condition_id, mr_grid_model_part.ElementsBegin()->GetGeometry(), properties);
 
                                 mpc_xg.clear();
@@ -882,20 +909,25 @@ public:
                                 }
 
                                 // Setting particle condition's initial condition
+                                // NOTE: If any variable is added or remove here, please add and remove also at the first loop above
                                 p_condition->SetValue(MPC_CONDITION_ID, MPC_Condition_Id);
                                 p_condition->SetValue(MPC_COORD, mpc_xg);
                                 p_condition->SetValue(MPC_AREA, MPC_Area);
                                 p_condition->SetValue(MPC_NORMAL, MPC_Normal);
+                                p_condition->SetValue(MPC_DISPLACEMENT, MPC_Displacement);
+                                p_condition->SetValue(MPC_VELOCITY, MPC_Velocity);
+                                p_condition->SetValue(MPC_ACCELERATION, MPC_Acceleration);
+                                p_condition->SetValue(PENALTY_FACTOR, MPC_Penalty_Factor);
+                                if (is_slip)
+                                    p_condition->Set(SLIP);
 
                                 // Add the MP Condition to the model part
                                 mr_mpm_model_part.GetSubModelPart(submodelpart_name).AddCondition(p_condition);
 
                                 rGeom[j].Set(VISITED);
+                                last_condition_id ++;
                             }
                         }
-
-                        last_condition_id += rGeom.size();
-
                     }
                 }
             }
