@@ -594,6 +594,8 @@ public:
         array_1d<double,3> MPC_Displacement = ZeroVector(3);
         array_1d<double,3> MPC_Velocity = ZeroVector(3);
         array_1d<double,3> MPC_Acceleration = ZeroVector(3);
+        array_1d<double, 3 > Point_Load = ZeroVector(3);
+
 
         double MPC_Area = 0.0;
         double MPC_Penalty_Factor = 0.0;
@@ -702,6 +704,11 @@ public:
                                     else if (rBackgroundGeoType == GeometryData::Kratos_Hexahedra3D8)
                                         condition_type_name = "MPMParticlePointLoadCondition3D8N";
                                 }
+
+                                if( i->Has( POINT_LOAD ) )
+                                    Point_Load = i->GetValue( POINT_LOAD );
+
+                                KRATOS_WATCH(Point_Load);
                             }
 
 
@@ -883,6 +890,7 @@ public:
                             // TODO: If any variable is added or remove here, please add and remove also at the second loop below
                             p_condition->SetValue(MPC_CONDITION_ID, MPC_Condition_Id);
                             p_condition->SetValue(MPC_COORD, mpc_xg);
+                            p_condition->SetValue(POINT_LOAD, Point_Load);
                             p_condition->SetValue(MPC_AREA, MPC_Area);
                             p_condition->SetValue(MPC_NORMAL, MPC_Normal);
                             p_condition->SetValue(MPC_DISPLACEMENT, MPC_Displacement);
@@ -924,6 +932,7 @@ public:
                                 // TODO: If any variable is added or remove here, please add and remove also at the first loop above
                                 p_condition->SetValue(MPC_CONDITION_ID, MPC_Condition_Id);
                                 p_condition->SetValue(MPC_COORD, mpc_xg);
+                                p_condition->SetValue(POINT_LOAD, Point_Load);
                                 p_condition->SetValue(MPC_AREA, MPC_Area);
                                 p_condition->SetValue(MPC_NORMAL, MPC_Normal);
                                 p_condition->SetValue(MPC_DISPLACEMENT, MPC_Displacement);

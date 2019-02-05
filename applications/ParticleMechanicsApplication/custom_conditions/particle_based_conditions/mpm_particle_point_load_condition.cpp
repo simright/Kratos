@@ -74,12 +74,13 @@ namespace Kratos
 
         // Vector with a loading applied to the condition
         array_1d<double, 3 > PointLoad = ZeroVector(3);
-        /* if( this->Has( POINT_LOAD ) )
-        { */
-        /* noalias(PointLoad) = rGeom.FastGetSolutionStepValue( POINT_LOAD );
 
-        this->SetValue(MPC_FORCE, PointLoad); */
-        KRATOS_WATCH(PointLoad);
+        //PointLoad = this->GetValue(POINT_LOAD);
+        //KRATOS_WATCH(PointLoad);
+
+
+        //this->SetValue(MPC_FORCE, PointLoad);
+        //KRATOS_WATCH(PointLoad);
     }
     void MPMParticlePointLoadCondition::InitializeGeneralVariables (GeneralVariables& rVariables, const ProcessInfo& rCurrentProcessInfo)
     {
@@ -162,7 +163,7 @@ namespace Kratos
         /* NOTE:
         In the InitializeSolutionStep of each time step the nodal initial conditions are evaluated.
         This function is called by the base scheme class.*/
-        GeometryType& rGeom = GetGeometry();
+        /* GeometryType& rGeom = GetGeometry();
         const unsigned int dimension = rGeom.WorkingSpaceDimension();
         const unsigned int number_of_nodes = rGeom.PointsNumber();
         const array_1d<double,3> & xg = this->GetValue(MPC_COORD);
@@ -181,7 +182,7 @@ namespace Kratos
             {
                 nodal_force[j] += Variables.N[i] * f_c[j];
             }
-        }
+        } */
     }
 
 
@@ -222,24 +223,24 @@ namespace Kratos
         }
 
         // Vector with a loading applied to the condition
-        array_1d<double, 3 > PointLoad = ZeroVector(3);
+        array_1d<double, 3 > Point_Load = ZeroVector(3);
         if( this->Has( POINT_LOAD ) )
         {
-            noalias(PointLoad) = this->GetValue( POINT_LOAD );
+            noalias(Point_Load) = this->GetValue( POINT_LOAD );
         }
-
+        KRATOS_WATCH(Point_Load);
         for (unsigned int ii = 0; ii < NumberOfNodes; ++ii)
         {
             const unsigned int base = ii*Dimension;
 
             if( GetGeometry()[ii].SolutionStepsDataHas( POINT_LOAD ) )
             {
-                noalias(PointLoad) += GetGeometry()[ii].FastGetSolutionStepValue( POINT_LOAD );
+                noalias(Point_Load) += GetGeometry()[ii].FastGetSolutionStepValue( POINT_LOAD );
             }
-
+            KRATOS_WATCH(Point_Load);
             for(unsigned int k = 0; k < Dimension; ++k)
             {
-                rRightHandSideVector[base + k] += GetPointLoadIntegrationWeight() * PointLoad[k];
+                rRightHandSideVector[base + k] += GetPointLoadIntegrationWeight() * Point_Load[k];
             }
         }
 
