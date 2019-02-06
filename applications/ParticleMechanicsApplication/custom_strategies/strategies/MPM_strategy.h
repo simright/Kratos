@@ -707,8 +707,6 @@ public:
 
                                 if( i->Has( POINT_LOAD ) )
                                     Point_Load = i->GetValue( POINT_LOAD );
-
-                                KRATOS_WATCH(Point_Load);
                             }
 
 
@@ -949,6 +947,7 @@ public:
 
                                 rGeom[j].Set(VISITED);
                                 last_condition_id ++;
+
                             }
                         }
                     }

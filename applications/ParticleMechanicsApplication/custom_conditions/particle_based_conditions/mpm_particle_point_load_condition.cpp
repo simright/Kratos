@@ -63,10 +63,6 @@ namespace Kratos
     {
     }
 
-    //************************************************************************************
-    //************************************************************************************
-
-
     //*************************COMPUTE CURRENT DISPLACEMENT*******************************
     //************************************************************************************
     /*
@@ -130,8 +126,6 @@ namespace Kratos
         KRATOS_CATCH( "" )
     }
 
-
-
     void MPMParticlePointLoadCondition::CalculateAll(
         MatrixType& rLeftHandSideMatrix, VectorType& rRightHandSideVector,
         ProcessInfo& rCurrentProcessInfo,
@@ -168,8 +162,7 @@ namespace Kratos
             noalias( rRightHandSideVector ) = ZeroVector( MatSize ); //resetting RHS
         }
 
-        // Vector with a loading applied to the condition
-                // Get imposed displacement and normal vector
+        // Get imposed displacement and normal vector
         const array_1d<double, 3 > & xg_c = this->GetValue(MPC_COORD);
         const array_1d<double, 3 > & Point_Load = this->GetValue (POINT_LOAD);
         Matrix Nodal_Force = ZeroMatrix(3,NumberOfNodes);
@@ -197,10 +190,9 @@ namespace Kratos
 
             for(unsigned int k = 0; k < Dimension; ++k)
             {
-                rRightHandSideVector[base + k] += GetPointLoadIntegrationWeight() * Point_Load[k,ii];
+                rRightHandSideVector[base + k] += GetPointLoadIntegrationWeight() * Nodal_Force(k,ii);
             }
         }
-
         KRATOS_CATCH( "" )
     }
 
@@ -244,30 +236,24 @@ namespace Kratos
     {
         KRATOS_TRY
 
-        const unsigned int NumberOfNodes = GetGeometry().size();
+        const unsigned int number_of_nodes = GetGeometry().PointsNumber();
         const unsigned int dimension = GetGeometry().WorkingSpaceDimension();
-        Vector rPointLocal = ZeroVector(dimension);
-
+        array_1d<double,3> rPointLocal = ZeroVector(3);
+        rPointLocal = GetGeometry().PointLocalCoordinates(rPointLocal, rPoint);
 
         if (dimension == 2)
         {
-            if (NumberOfNodes == 3)
+            if (number_of_nodes == 3)
             {
                 rResult.resize(3, false);
-                array_1d<double,3> rPointLocal = ZeroVector(3);
-
-                rPointLocal = GetGeometry().PointLocalCoordinates(rPointLocal, rPoint);
 
                 rResult[0] = 1 - rPointLocal[0] - rPointLocal[1] ;
                 rResult[1] = rPointLocal[0] ;
                 rResult[2] = rPointLocal[1];
             }
-            else if (NumberOfNodes == 4)
+            else if (number_of_nodes == 4)
             {
                 rResult.resize(4, false);
-                array_1d<double,3> rPointLocal = ZeroVector(3);
-
-                rPointLocal = GetGeometry().PointLocalCoordinates(rPointLocal, rPoint);
 
                 rResult[0] = 0.25 * (1 - rPointLocal[0]) * (1 - rPointLocal[1]) ;
                 rResult[1] = 0.25 * (1 + rPointLocal[0]) * (1 - rPointLocal[1]) ;
@@ -277,24 +263,18 @@ namespace Kratos
         }
         else if (dimension == 3)
         {
-            if (NumberOfNodes == 4)
+            if (number_of_nodes == 4)
             {
                 rResult.resize(4, false);
-                array_1d<double,3> rPointLocal = ZeroVector(3);
-
-                rPointLocal = GetGeometry().PointLocalCoordinates(rPointLocal, rPoint);
 
                 rResult[0] =  1.0-(rPointLocal[0]+rPointLocal[1]+rPointLocal[2]) ;
                 rResult[1] = rPointLocal[0] ;
                 rResult[2] = rPointLocal[1];
                 rResult[3] = rPointLocal[2];
             }
-            else if (NumberOfNodes == 8)
+            else if (number_of_nodes == 8)
             {
                 rResult.resize(8, false);
-                array_1d<double,3> rPointLocal = ZeroVector(3);
-
-                rPointLocal = GetGeometry().PointLocalCoordinates(rPointLocal, rPoint);
 
                 // Shape Functions (if the first node of the connettivity is the node at (-1,-1,-1))
                 // NOTE: Implemented based on Carlos Felippa's Lecture on AFEM Chapter 11
@@ -313,6 +293,26 @@ namespace Kratos
 
         KRATOS_CATCH( "" )
     }
+
+    /* void MPMParticleBaseDirichletCondition::FinalizeSolutionStep( ProcessInfo& rCurrentProcessInfo )
+    {
+        KRATOS_TRY
+
+        this->UpdateGaussPoint
+
+        // Update the MPC Position
+        const array_1d<double,3> & xg_c = this->GetValue(MPC_COORD);
+        array_1d<double,3> & displacement = this->GetValue(MPC_DISPLACEMENT);
+        const array_1d<double,3> & new_xg_c = xg_c + displacement ;
+        this -> SetValue(MPC_COORD,new_xg_c);
+
+        // Set displacement to zero (NOTE: to use incremental displacement, use MPC_VELOCITY)
+        displacement.clear();
+
+        mFinalizedStep = true;
+
+        KRATOS_CATCH( "" )
+    } */
 
 
 
