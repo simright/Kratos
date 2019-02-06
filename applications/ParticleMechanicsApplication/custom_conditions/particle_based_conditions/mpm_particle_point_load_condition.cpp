@@ -94,7 +94,7 @@ namespace Kratos
     }
 
 
-    void MPMParticlePointLoadCondition::UpdateGaussPoint( GeneralVariables & rVariables, const ProcessInfo& rCurrentProcessInfo)
+    void MPMParticlePointLoadCondition::UpdateMPC_Coord( GeneralVariables & rVariables, const ProcessInfo& rCurrentProcessInfo)
     {
         KRATOS_TRY
 
@@ -118,10 +118,13 @@ namespace Kratos
                 }
             }
         }
-
+        KRATOS_WATCH(rVariables.CurrentDisp);
+        KRATOS_WATCH(delta_xg);
         // Update the Material Point Condition Position
         const array_1d<double,3>& new_xg = xg + delta_xg ;
         this -> SetValue(MPC_COORD,new_xg);
+        KRATOS_WATCH(xg);
+        KRATOS_WATCH(new_xg);
 
         KRATOS_CATCH( "" )
     }
@@ -135,39 +138,39 @@ namespace Kratos
     {
         KRATOS_TRY
 
-        const unsigned int NumberOfNodes = GetGeometry().size();
-        const unsigned int Dimension = GetGeometry().WorkingSpaceDimension();
+        const unsigned int number_of_nodes = GetGeometry().size();
+        const unsigned int dimension = GetGeometry().WorkingSpaceDimension();
+        const unsigned int block_size = this->GetBlockSize();
 
         // Resizing as needed the LHS
-        const unsigned int MatSize = NumberOfNodes * Dimension;
+        const unsigned int matrix_size = number_of_nodes * block_size;
 
         if ( CalculateStiffnessMatrixFlag == true ) //calculation of the matrix is required
         {
-            if ( rLeftHandSideMatrix.size1() != MatSize )
+            if ( rLeftHandSideMatrix.size1() != matrix_size )
             {
-                rLeftHandSideMatrix.resize( MatSize, MatSize, false );
+                rLeftHandSideMatrix.resize( matrix_size, matrix_size, false );
             }
 
-            noalias( rLeftHandSideMatrix ) = ZeroMatrix(MatSize); //resetting LHS
+            noalias( rLeftHandSideMatrix ) = ZeroMatrix(matrix_size,matrix_size); //resetting LHS
         }
 
-        //resizing as needed the RHS
+        // Resizing as needed the RHS
         if ( CalculateResidualVectorFlag == true ) //calculation of the matrix is required
         {
-            if ( rRightHandSideVector.size( ) != MatSize )
+            if ( rRightHandSideVector.size( ) != matrix_size )
             {
-                rRightHandSideVector.resize( MatSize, false );
+                rRightHandSideVector.resize( matrix_size, false );
             }
 
-            noalias( rRightHandSideVector ) = ZeroVector( MatSize ); //resetting RHS
+            noalias( rRightHandSideVector ) = ZeroVector( matrix_size ); //resetting RHS
         }
 
         // Get imposed displacement and normal vector
         const array_1d<double, 3 > & xg_c = this->GetValue(MPC_COORD);
         const array_1d<double, 3 > & Point_Load = this->GetValue (POINT_LOAD);
-        Matrix Nodal_Force = ZeroMatrix(3,NumberOfNodes);
+        Matrix Nodal_Force = ZeroMatrix(3,number_of_nodes);
 
-        //array_1d<double, 3 > Nodal_Force = ZeroVector(3);
 
         // Prepare variables
         GeneralVariables Variables;
@@ -176,42 +179,24 @@ namespace Kratos
         Variables.N = this->MPMShapeFunctionPointValues(Variables.N, xg_c);
 
         // Here MP contribution in terms of force are added
-        for ( unsigned int i = 0; i < NumberOfNodes; i++ )
+        for ( unsigned int i = 0; i < number_of_nodes; i++ )
         {
-            for (unsigned int j = 0; j < Dimension; j++)
+            for (unsigned int j = 0; j < dimension; j++)
             {
                 Nodal_Force(j,i) = Variables.N[i] * Point_Load[j];
             }
         }
 
-        for (unsigned int ii = 0; ii < NumberOfNodes; ++ii)
+        for (unsigned int ii = 0; ii < number_of_nodes; ++ii)
         {
-            const unsigned int base = ii*Dimension;
+            const unsigned int base = ii*dimension;
 
-            for(unsigned int k = 0; k < Dimension; ++k)
+            for(unsigned int k = 0; k < dimension; ++k)
             {
                 rRightHandSideVector[base + k] += GetPointLoadIntegrationWeight() * Nodal_Force(k,ii);
             }
         }
         KRATOS_CATCH( "" )
-    }
-
-    void MPMParticlePointLoadCondition::GetDofList( DofsVectorType& rElementalDofList, ProcessInfo& CurrentProcessInfo )
-    {
-        GeometryType& rGeom = GetGeometry();
-        rElementalDofList.resize( 0 );
-
-        for ( unsigned int i = 0; i < rGeom.size(); i++ )
-        {
-            rElementalDofList.push_back( rGeom[i].pGetDof( DISPLACEMENT_X ) );
-            rElementalDofList.push_back( rGeom[i].pGetDof( DISPLACEMENT_Y ) );
-
-            if ( rGeom.WorkingSpaceDimension() == 3 )
-            {
-                rElementalDofList.push_back( rGeom[i].pGetDof( DISPLACEMENT_Z ) );
-            }
-        }
-
     }
 
     //************************************************************************************
@@ -294,25 +279,14 @@ namespace Kratos
         KRATOS_CATCH( "" )
     }
 
-    /* void MPMParticleBaseDirichletCondition::FinalizeSolutionStep( ProcessInfo& rCurrentProcessInfo )
+    void MPMParticlePointLoadCondition::FinalizeSolutionStep( ProcessInfo& rCurrentProcessInfo )
     {
-        KRATOS_TRY
+        GeneralVariables Variables;
+        this->UpdateMPC_Coord(Variables, rCurrentProcessInfo);
 
-        this->UpdateGaussPoint
+        //mFinalizedStep = true;
 
-        // Update the MPC Position
-        const array_1d<double,3> & xg_c = this->GetValue(MPC_COORD);
-        array_1d<double,3> & displacement = this->GetValue(MPC_DISPLACEMENT);
-        const array_1d<double,3> & new_xg_c = xg_c + displacement ;
-        this -> SetValue(MPC_COORD,new_xg_c);
-
-        // Set displacement to zero (NOTE: to use incremental displacement, use MPC_VELOCITY)
-        displacement.clear();
-
-        mFinalizedStep = true;
-
-        KRATOS_CATCH( "" )
-    } */
+    }
 
 
 

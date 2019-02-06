@@ -902,6 +902,7 @@ public:
 
                             // Add the MP Condition to the model part
                             mr_mpm_model_part.GetSubModelPart(submodelpart_name).AddCondition(p_condition);
+
                         }
 
                         last_condition_id += integration_point_per_conditions;

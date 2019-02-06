@@ -182,12 +182,14 @@ protected:
      */
     Matrix& CalculateCurrentDisp(Matrix & rCurrentDisp, const ProcessInfo& rCurrentProcessInfo);
 
-    /**
-     * Sets on rElementalDofList the degrees of freedom of the considered element geometry
-     */
-    void GetDofList(DofsVectorType& rElementalDofList, ProcessInfo& rCurrentProcessInfo) override;
 
-    void UpdateGaussPoint(GeneralVariables & rVariables, const ProcessInfo& rCurrentProcessInfo);
+    void UpdateMPC_Coord(GeneralVariables & rVariables, const ProcessInfo& rCurrentProcessInfo);
+
+    /**
+     * Called at the end of eahc solution step
+     * @param rCurrentProcessInfo the current process info instance
+     */
+    void FinalizeSolutionStep(ProcessInfo& CurrentProcessInfo) override;
 
     ///@}
     ///@name Protected  Access
