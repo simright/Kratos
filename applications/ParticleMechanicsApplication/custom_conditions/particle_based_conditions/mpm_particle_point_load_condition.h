@@ -151,24 +151,6 @@ protected:
     ///@{
 
     /**
-     * Called to initialize the element.
-     * Must be called before any calculation is done
-     */
-    void Initialize() override;
-    /**
-     * Initialize Element General Variables
-     */
-    void InitializeGeneralVariables (
-        GeneralVariables& rVariables,
-        const ProcessInfo& rCurrentProcessInfo
-        );
-
-    /**
-     * Called at the beginning of each solution step
-     */
-    void InitializeSolutionStep(ProcessInfo& rCurrentProcessInfo) override;
-
-    /**
      * This functions calculates both the RHS and the LHS
      * @param rLeftHandSideMatrix: The LHS
      * @param rRightHandSideVector: The RHS

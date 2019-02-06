@@ -67,34 +67,6 @@ namespace Kratos
     //************************************************************************************
 
 
-    void MPMParticlePointLoadCondition::Initialize()
-    {
-        auto& rGeom = this->GetGeometry(); // current condition's geometry
-        const GeometryData::KratosGeometryType rGeoType = rGeom.GetGeometryType();
-
-        // Vector with a loading applied to the condition
-        array_1d<double, 3 > PointLoad = ZeroVector(3);
-
-        //PointLoad = this->GetValue(POINT_LOAD);
-        //KRATOS_WATCH(PointLoad);
-
-
-        //this->SetValue(MPC_FORCE, PointLoad);
-        //KRATOS_WATCH(PointLoad);
-    }
-    void MPMParticlePointLoadCondition::InitializeGeneralVariables (GeneralVariables& rVariables, const ProcessInfo& rCurrentProcessInfo)
-    {
-        const GeometryType& rGeom = GetGeometry();
-        const unsigned int number_of_nodes = GetGeometry().size();
-        const unsigned int dimension = GetGeometry().WorkingSpaceDimension();
-
-
-        const array_1d<double,3>& xg = this->GetValue(MPC_COORD);
-
-        rVariables.N = this->MPMShapeFunctionPointValues(rVariables.N, xg);
-
-    }
-
     //*************************COMPUTE CURRENT DISPLACEMENT*******************************
     //************************************************************************************
     /*
@@ -158,32 +130,6 @@ namespace Kratos
         KRATOS_CATCH( "" )
     }
 
-    void MPMParticlePointLoadCondition::InitializeSolutionStep( ProcessInfo& rCurrentProcessInfo )
-    {
-        /* NOTE:
-        In the InitializeSolutionStep of each time step the nodal initial conditions are evaluated.
-        This function is called by the base scheme class.*/
-        /* GeometryType& rGeom = GetGeometry();
-        const unsigned int dimension = rGeom.WorkingSpaceDimension();
-        const unsigned int number_of_nodes = rGeom.PointsNumber();
-        const array_1d<double,3> & xg = this->GetValue(MPC_COORD);
-        const array_1d<double,3> & f_c = this->GetValue(MPC_FORCE);
-        GeneralVariables Variables;
-
-        // Calculating shape function
-        Variables.N = this->MPMShapeFunctionPointValues(Variables.N, xg);
-
-        array_1d<double,3> nodal_force = ZeroVector(3);
-
-        // Here MP contribution in terms of force are added
-        for ( unsigned int i = 0; i < number_of_nodes; i++ )
-        {
-            for (unsigned int j = 0; j < dimension; j++)
-            {
-                nodal_force[j] += Variables.N[i] * f_c[j];
-            }
-        } */
-    }
 
 
     void MPMParticlePointLoadCondition::CalculateAll(
@@ -223,24 +169,35 @@ namespace Kratos
         }
 
         // Vector with a loading applied to the condition
-        array_1d<double, 3 > Point_Load = ZeroVector(3);
-        if( this->Has( POINT_LOAD ) )
+                // Get imposed displacement and normal vector
+        const array_1d<double, 3 > & xg_c = this->GetValue(MPC_COORD);
+        const array_1d<double, 3 > & Point_Load = this->GetValue (POINT_LOAD);
+        Matrix Nodal_Force = ZeroMatrix(3,NumberOfNodes);
+
+        //array_1d<double, 3 > Nodal_Force = ZeroVector(3);
+
+        // Prepare variables
+        GeneralVariables Variables;
+
+        // Calculating shape function
+        Variables.N = this->MPMShapeFunctionPointValues(Variables.N, xg_c);
+
+        // Here MP contribution in terms of force are added
+        for ( unsigned int i = 0; i < NumberOfNodes; i++ )
         {
-            noalias(Point_Load) = this->GetValue( POINT_LOAD );
+            for (unsigned int j = 0; j < Dimension; j++)
+            {
+                Nodal_Force(j,i) = Variables.N[i] * Point_Load[j];
+            }
         }
-        KRATOS_WATCH(Point_Load);
+
         for (unsigned int ii = 0; ii < NumberOfNodes; ++ii)
         {
             const unsigned int base = ii*Dimension;
 
-            if( GetGeometry()[ii].SolutionStepsDataHas( POINT_LOAD ) )
-            {
-                noalias(Point_Load) += GetGeometry()[ii].FastGetSolutionStepValue( POINT_LOAD );
-            }
-            KRATOS_WATCH(Point_Load);
             for(unsigned int k = 0; k < Dimension; ++k)
             {
-                rRightHandSideVector[base + k] += GetPointLoadIntegrationWeight() * Point_Load[k];
+                rRightHandSideVector[base + k] += GetPointLoadIntegrationWeight() * Point_Load[k,ii];
             }
         }
 
