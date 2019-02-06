@@ -6,7 +6,7 @@
 //  License:         BSD License
 //                   license: structural_mechanics_application/license.txt
 //
-//  Main authors:    Vicente Mataix Ferrandiz
+//  Main authors:    Alejandro Cornejo & Philip Kalkbrenner
 //
 
 #if !defined (KRATOS_AXISYM_ELASTIC_ISOTROPIC_LAW_H_INCLUDED)
@@ -40,7 +40,7 @@ namespace Kratos
 ///@name Kratos Classes
 ///@{
 
-class KRATOS_API(STRUCTURAL_MECHANICS_APPLICATION) AxisymElasticIsotropic : public ElasticIsotropic3D
+class KRATOS_API(STRUCTURAL_MECHANICS_APPLICATION) SmallStrainDamagePetracca3D : public ElasticIsotropic3D
 {
 public:
 
@@ -52,9 +52,9 @@ public:
     typedef std::size_t             SizeType;
 
     /**
-     * Counted pointer of AxisymElasticIsotropic
+     * Counted pointer of SmallStrainDamagePetracca3D
      */
-    KRATOS_CLASS_POINTER_DEFINITION( AxisymElasticIsotropic );
+    KRATOS_CLASS_POINTER_DEFINITION( SmallStrainDamagePetracca3D );
 
     ///@name Lyfe Cycle
     ///@{
@@ -62,19 +62,19 @@ public:
     /**
      * Default constructor.
      */
-    AxisymElasticIsotropic();
+    SmallStrainDamagePetracca3D();
 
     ConstitutiveLaw::Pointer Clone() const override;
 
     /**
      * Copy constructor.
      */
-    AxisymElasticIsotropic (const AxisymElasticIsotropic& rOther);
+    SmallStrainDamagePetracca3D (const SmallStrainDamagePetracca3D& rOther);
 
     /**
      * Destructor.
      */
-    ~AxisymElasticIsotropic() override;
+    ~SmallStrainDamagePetracca3D() override;
 
     ///@}
     ///@name Operators
@@ -95,7 +95,7 @@ public:
      */
     SizeType GetStrainSize() override
     {
-        return 4;
+        return 6;
     }
 
     ///@}
@@ -115,6 +115,13 @@ public:
     ///@{
 
     ///@}
+
+    /**
+     * @brief Initialize the material response in terms of Cauchy stresses
+     * @see Parameters
+     */
+    void InitializeMaterialResponseCauchy(ConstitutiveLaw::Parameters& rValues) override;
+
 
 protected:
 
@@ -148,23 +155,6 @@ private:
     ///@name Private Operators
     ///@{
 
-    /**
-     * It calculates the constitutive matrix C
-     * @param C: The constitutive matrix
-     * @param E: The Young Modulus
-     * @param NU: The poisson coefficient
-     */
-    void CalculateElasticMatrix(Matrix& C, ConstitutiveLaw::Parameters& rValues) override;
-
-    /**
-     * It calculates the strain vector
-     * @param rValues: The Internalvalues of the law
-     * @param rStrainVector: The strain vector in Voigt notation
-     */
-    void CalculateCauchyGreenStrain(
-        ConstitutiveLaw::Parameters& rValues,
-        Vector& rStrainVector
-    ) override;
 
     ///@}
     ///@name Private Operations
@@ -193,6 +183,6 @@ private:
     }
 
 
-}; // Class AxisymElasticIsotropic
+}; // Class SmallStrainDamagePetracca3D
 }  // namespace Kratos.
 #endif // KRATOS_AXISYM_ELASTIC_ISOTROPIC_LAW_H_INCLUDED  defined
