@@ -120,7 +120,7 @@ public:
      * @brief Initialize the material response in terms of Cauchy stresses
      * @see Parameters
      */
-    void InitializeMaterialResponseCauchy(ConstitutiveLaw::Parameters& rValues) override;
+    void CalculateMaterialResponseCauchy(ConstitutiveLaw::Parameters& rValues) override;
 
 
 protected:

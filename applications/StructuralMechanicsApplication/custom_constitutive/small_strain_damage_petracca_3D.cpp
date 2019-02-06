@@ -52,7 +52,7 @@ SmallStrainDamagePetracca3D::~SmallStrainDamagePetracca3D()
 {
 };
 
-void SmallStrainDamagePetracca3D::InitializeMaterialResponseCauchy(ConstitutiveLaw::Parameters& rValues)
+void SmallStrainDamagePetracca3D::CalculateMaterialResponseCauchy(ConstitutiveLaw::Parameters& rValues)
 {
     // To implement
 }
