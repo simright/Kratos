@@ -171,19 +171,6 @@ protected:
      */
     double GetPointLoadIntegrationWeight() override;
 
-    /**
-     * Calculate Shape Function Values in a given point
-     */
-
-    Vector& MPMShapeFunctionPointValues(Vector& rResult, const array_1d<double,3>& rPoint);
-
-    /**
-     * Calculation of the Current Displacement
-     */
-    Matrix& CalculateCurrentDisp(Matrix & rCurrentDisp, const ProcessInfo& rCurrentProcessInfo);
-
-
-    void UpdateMPC_Coord(GeneralVariables & rVariables, const ProcessInfo& rCurrentProcessInfo);
 
     /**
      * Called at the end of eahc solution step

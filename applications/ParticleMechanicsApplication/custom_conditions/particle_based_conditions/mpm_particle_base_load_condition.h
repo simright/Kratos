@@ -203,7 +203,16 @@ protected:
      */
     virtual double GetPointLoadIntegrationWeight();
 
+    /**
+     * Calculate Shape Function Values in a given point
+     */
 
+    Vector& MPMShapeFunctionPointValues(Vector& rResult, const array_1d<double,3>& rPoint);
+
+    /**
+     * Calculation of the Current Displacement
+     */
+    Matrix& CalculateCurrentDisp(Matrix & rCurrentDisp, const ProcessInfo& rCurrentProcessInfo);
 
 
     ///@}
