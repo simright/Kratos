@@ -56,7 +56,7 @@ set( KRATOS_PFEM_FLUID_DYNAMICS_APPLICATION_PYTHON_INTERFACE
 )
 
 add_library(KratosPfemFluidDynamicsCore SHARED ${KRATOS_PFEM_FLUID_DYNAMICS_APPLICATION_CORE})
-target_link_libraries(KratosPfemFluidDynamicsCore PUBLIC KratosCore KratosDelaunayMeshingCore)
+target_link_libraries(KratosPfemFluidDynamicsCore PUBLIC KratosDelaunayMeshingCore)
 set_target_properties(KratosPfemFluidDynamicsCore PROPERTIES COMPILE_DEFINITIONS "PFEM_FLUID_DYNAMICS_APPLICATION=EXPORT,API")
 
 ###############################################################
