@@ -134,10 +134,6 @@ void CableElement3D2N::UpdateInternalForces(
   KRATOS_CATCH("");
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> e51af5685f... fix rhs computation
 void CableElement3D2N::save(Serializer &rSerializer) const {
   KRATOS_SERIALIZE_SAVE_BASE_CLASS(rSerializer, TrussElement3D2N);
   rSerializer.save("mIscompressed", this->mIsCompressed);
