@@ -3,6 +3,7 @@ import KratosMultiphysics
 import os
 import KratosMultiphysics.KratosUnittest as KratosUnittest
 from KratosMultiphysics.StructuralMechanicsApplication.structural_mechanics_analysis import StructuralMechanicsAnalysis
+import KratosMultiphysics.StructuralMechanicsApplication as StructuralMechanicsApplication
 import structural_response_function_factory
 import KratosMultiphysics.kratos_utilities as kratos_utils
 
@@ -22,8 +23,22 @@ class AdjointSensitivityNonlinearTruss(KratosUnittest.TestCase):
         response_function.RunCalculation(calculate_gradient=True)
 
         node_sensitivity = []
+        node_adjoint_displacement = []
+        node_primal_displacement = []
         for i in range(1,4):
             node_sensitivity.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(KratosMultiphysics.SHAPE_SENSITIVITY) )
+            node_adjoint_displacement.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(StructuralMechanicsApplication.ADJOINT_DISPLACEMENT) )
+            node_primal_displacement.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(KratosMultiphysics.DISPLACEMENT) )
+
+        ## Testing Primal Displacement
+        self.assertAlmostEqual(node_primal_displacement[0][1], -0.380132, 5)
+        self.assertAlmostEqual(node_primal_displacement[1][0], -0.0183309, 5)
+        self.assertAlmostEqual(node_primal_displacement[1][1], -0.152731, 5)
+
+        ## Testing Adjoint Displacement
+        self.assertAlmostEqual(node_adjoint_displacement[0][1], -0.592063, 5)
+        self.assertAlmostEqual(node_adjoint_displacement[1][0], -0.0377389, 5)
+        self.assertAlmostEqual(node_adjoint_displacement[1][1], -0.187154, 5)
 
         # ## Testing Adjoint sensitivity values with Finite difference results
         self.assertAlmostEqual(node_sensitivity[0][0], 0.00045709764862067454, 2)
@@ -53,8 +68,22 @@ class AdjointSensitivityNonlinearTruss(KratosUnittest.TestCase):
         response_function.RunCalculation(calculate_gradient=True)
 
         node_sensitivity = []
+        node_adjoint_displacement = []
+        node_primal_displacement = []
         for i in range(1,4):
             node_sensitivity.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(KratosMultiphysics.SHAPE_SENSITIVITY) )
+            node_adjoint_displacement.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(StructuralMechanicsApplication.ADJOINT_DISPLACEMENT) )
+            node_primal_displacement.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(KratosMultiphysics.DISPLACEMENT) )
+
+        ## Testing Primal Displacement
+        self.assertAlmostEqual(node_primal_displacement[0][1], -0.250272, 5)
+        self.assertAlmostEqual(node_primal_displacement[1][0], 0.0104822, 5)
+        self.assertAlmostEqual(node_primal_displacement[1][1], -0.182561, 5)
+
+        ## Testing Adjoint Displacement
+        self.assertAlmostEqual(node_adjoint_displacement[0][1], -0.334002, 5)
+        self.assertAlmostEqual(node_adjoint_displacement[1][0], 0.0199123, 5)
+        self.assertAlmostEqual(node_adjoint_displacement[1][1], -0.270252, 5)
 
         # ## Testing Adjoint sensitivity values with Finite difference results
         self.assertAlmostEqual(node_sensitivity[0][0],-0.056284024907427004, 0)
@@ -84,8 +113,18 @@ class AdjointSensitivityNonlinearTruss(KratosUnittest.TestCase):
         response_function.RunCalculation(calculate_gradient=True)
 
         node_sensitivity = []
+        node_adjoint_displacement = []
+        node_primal_displacement = []
         for i in range(1,4):
             node_sensitivity.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(KratosMultiphysics.SHAPE_SENSITIVITY) )
+            node_adjoint_displacement.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(StructuralMechanicsApplication.ADJOINT_DISPLACEMENT) )
+            node_primal_displacement.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(KratosMultiphysics.DISPLACEMENT) )
+
+        ## Testing Primal Displacement
+        self.assertAlmostEqual(node_primal_displacement[0][2], -1.31138, 5)
+
+        ## Testing Adjoint Displacement
+        self.assertAlmostEqual(node_adjoint_displacement[0][2], -2.60392, 5)
 
         ## Testing Adjoint sensitivity values with Finite difference results
         self.assertAlmostEqual(node_sensitivity[0][0], 0.003973418927216699, 2)
@@ -121,8 +160,18 @@ class AdjointSensitivityNonlinearTruss(KratosUnittest.TestCase):
         response_function.RunCalculation(calculate_gradient=True)
 
         node_sensitivity = []
+        node_adjoint_displacement = []
+        node_primal_displacement = []
         for i in range(1,4):
             node_sensitivity.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(KratosMultiphysics.SHAPE_SENSITIVITY) )
+            node_adjoint_displacement.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(StructuralMechanicsApplication.ADJOINT_DISPLACEMENT) )
+            node_primal_displacement.append( model_part_adjoint.GetNode(i).GetSolutionStepValue(KratosMultiphysics.DISPLACEMENT) )
+
+        ## Testing Primal Displacement
+        self.assertAlmostEqual(node_primal_displacement[0][1], -0.284834, 5)
+
+        ## Testing Adjoint Displacement
+        self.assertAlmostEqual(node_adjoint_displacement[0][1], -0.647269, 5)
 
         # ## Testing Adjoint sensitivity values with Finite difference results
         self.assertAlmostEqual(node_sensitivity[0][0],0.196686219489095, 0)
