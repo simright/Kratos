@@ -527,7 +527,7 @@ class NonlinearAdjointStrainEnergy(ResponseFunctionBase):
 
 
     def FinalizeSolutionStep(self):
-        self.adjoint_analysis.FinalizeSolutionStep()
+
         self.adjoint_analysis.OutputSolutionStep()
 
 
