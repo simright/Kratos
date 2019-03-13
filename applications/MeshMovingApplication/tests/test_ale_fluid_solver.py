@@ -23,7 +23,7 @@ class ALEFluidSolverTest(UnitTest.TestCase):
 
             kratos_utilities.DeleteFileIfExisting("test_ale_fluid_solver.post.lst")
 
-    def test_ALEFluidSolverOnSubdomains(self):
+    def _test_ALEFluidSolverOnSubdomains(self):
         work_folder = "test_ale_fluid_solver"
         settings_file_name = "ProjectParameters_ale_on_subdom_struct_sim_mono.json"
 
