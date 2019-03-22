@@ -29,10 +29,9 @@ class DemFemSolidAnalysis(Solution):
 
         self._model.main_model_part.AddNodalSolutionStepVariable(KratosMultiphysics.VOLUME_ACCELERATION)
         self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.DEM_SURFACE_LOAD)
-        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.DEM_SURFACE_LOAD_OLD)
-        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.DEM_SURFACE_LOAD_OLD2)
-        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.CURRENT_STRUCTURAL_VELOCITY)
-        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.CURRENT_STRUCTURAL_DISPLACEMENT)
+        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.BACKUP_LAST_STRUCTURAL_VELOCITY)
+        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.BACKUP_LAST_STRUCTURAL_DISPLACEMENT)
+        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.SMOOTHED_STRUCTURAL_VELOCITY)
         self._model.main_model_part.AddNodalSolutionStepVariable(Dem.DELTA_DISPLACEMENT)
         self._model.main_model_part.AddNodalSolutionStepVariable(Dem.DEM_PRESSURE)
         self._model.main_model_part.AddNodalSolutionStepVariable(Dem.DEM_NODAL_AREA)
