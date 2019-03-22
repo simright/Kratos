@@ -20,9 +20,6 @@
 "VelocityTrapOption"               : false,
 "RotationOption"                   : true,
 "CleanIndentationsOption"          : false,
-"strategy_parameters" : {
-    "RemoveBallsInitiallyTouchingWalls"          : false
-},
 "DeltaOption"                      : "Coordination_Number",
 "CoordinationNumber"               : 11,
 "AmplifiedSearchRadiusExtension"   : 1e-4,
