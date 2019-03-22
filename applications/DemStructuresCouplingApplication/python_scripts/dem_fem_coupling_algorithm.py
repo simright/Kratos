@@ -11,13 +11,15 @@ sys.path.insert(0, '')
 Logger.Print("Running under OpenMP........", label="DEM")
 import DEM_procedures
 import DEM_material_test_script
-import KratosMultiphysics.StructuralMechanicsApplication as Structural
+# import KratosMultiphysics.StructuralMechanicsApplication as Structural
 import KratosMultiphysics.DemStructuresCouplingApplication as DemFem
 import dem_structures_coupling_gid_output
 
 class Algorithm(object):
 
     def __init__(self):
+        import KratosMultiphysics.StructuralMechanicsApplication as Structural
+
         self.model = Kratos.Model()
 
         import dem_main_script_ready_for_coupling_with_fem
@@ -136,7 +138,7 @@ class Algorithm(object):
         self.dem_solution.time = 0.0
         self.dem_solution.time_old_print = 0.0
         self.time_dem   = 0.0
-        self.Dt_structural = self.structural_solution._GetSolver().settings["time_stepping"]["time_step"].GetDouble()
+        self.Dt_structural = self.structural_solution._GetSolver().ComputeDeltaTime()
 
         while self.structural_solution.time < self.structural_solution.end_time:
             for node in self.structural_mp.Nodes:
