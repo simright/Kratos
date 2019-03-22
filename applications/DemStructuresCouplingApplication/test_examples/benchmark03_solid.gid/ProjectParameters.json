@@ -1,0 +1,95 @@
+{
+    "problem_data"             : {
+        "problem_name" : "benchmark03",
+        "echo_level"   : 1,
+        "threads" : 1
+    },
+    "time_settings"            : {
+        "time_step"  : 0.0001,
+        "start_time" : 0.0,
+        "end_time"   : 0.05
+    },
+    "model_settings"           : {
+        "model_name"           : "benchmark03",
+        "dimension"            : 3,
+        "domain_parts_list"    : ["Parts_bottomfem","Parts_topfem"],
+        "processes_parts_list" : ["VELOCITY_bottomwall","VELOCITY_topwall"],
+        "input_file_settings"  : {
+            "name" : "benchmark03"
+        }
+    },
+    "solver_settings"          : {
+        "solver_type" : "solid_mechanics_dem_fem_solid_solver",
+        "Parameters"  : {
+            "time_integration_settings"      : {
+                "solution_type"      : "Dynamic",
+                "time_integration"   : "Implicit",
+                "integration_method" : "Bossak"
+            },
+            "convergence_criterion_settings" : {
+                "convergence_criterion"       : "And_criterion",
+                "variable_relative_tolerance" : 0.0001,
+                "variable_absolute_tolerance" : 1e-9,
+                "residual_relative_tolerance" : 0.0001,
+                "residual_absolute_tolerance" : 1e-9
+            },
+            "solving_strategy_settings"      : {
+                "line_search"            : false,
+                "max_iteration"          : 10,
+                "bossak_factor"          : -0.3,
+                "lumped_mass_matrix"     : false,
+                "consistent_mass_matrix" : true,
+                "rayleigh_beta" : 0.1
+            },
+            "linear_solver_settings"         : {
+                    "solver_type":     "amgcl",
+                    "smoother_type":   "ilu0",
+                    "krylov_type":     "gmres",
+                    "coarsening_type": "aggregation",
+                    "max_iteration":   100,
+                    "verbosity":       0,
+                    "tolerance":       1.0e-6,
+                    "scaling":         false
+            },
+            "dofs"                           : ["DISPLACEMENT"]
+        }
+    },
+    "constraints_process_list" : [{
+        "python_module" : "assign_vector_components_to_nodes_process",
+        "kratos_module" : "KratosMultiphysics.SolidMechanicsApplication",
+        "Parameters"    : {
+            "model_part_name"     : "VELOCITY_bottomwall",
+            "variable_name"       : "DISPLACEMENT",
+            "value"               : [null,null,"0.05*t"],
+            "compound_assignment" : "direct",
+            "interval"            : [0.0,"End"]
+        }
+    },{
+        "python_module" : "assign_vector_components_to_nodes_process",
+        "kratos_module" : "KratosMultiphysics.SolidMechanicsApplication",
+        "Parameters"    : {
+            "model_part_name"     : "VELOCITY_topwall",
+            "variable_name"       : "DISPLACEMENT",
+            "value"               : [null,null,"-0.05*t"],
+            "compound_assignment" : "direct",
+            "interval"            : [0.0,"End"]
+        }
+    }],
+    "loads_process_list"       : [],
+    "output_configuration"     : {
+        "result_file_configuration" : {
+            "gidpost_flags"       : {
+                "GiDPostMode"           : "GiD_PostBinary",
+                "WriteDeformedMeshFlag" : "WriteUndeformed",
+                "WriteConditionsFlag"   : "WriteElementsOnly",
+                "MultiFileFlag"         : "SingleFile"
+            },
+            "file_label"          : "time",
+            "output_control_type" : "time",
+            "output_frequency"    : 1,
+            "node_output"         : false,
+            "nodal_results"       : ["DISPLACEMENT","DISPLACEMENT_REACTION","VELOCITY","ACCELERATION"],
+            "gauss_point_results" : ["CAUCHY_STRESS_TENSOR","VON_MISES_STRESS"]
+        }
+    }
+}
