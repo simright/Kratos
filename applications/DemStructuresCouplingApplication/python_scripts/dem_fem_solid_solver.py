@@ -24,12 +24,11 @@ class DemFemSolidSolver(ImplicitMonolithicSolver):
         return self.process_info[KratosMultiphysics.DELTA_TIME]
 
     def AdvanceInTime(self, current_time):
-        dt = self.ComputeDeltaTime()
-        new_time = current_time + dt
-        self.main_model_part.ProcessInfo[KratosMultiphysics.STEP] += 1
-        self.main_model_part.CloneTimeStep(new_time)
-
-        return new_time
+        # dt = self.ComputeDeltaTime()
+        # new_time = current_time + dt
+        # self.main_model_part.ProcessInfo[KratosMultiphysics.STEP] += 1
+        # self.main_model_part.CloneTimeStep(new_time)
+        return current_time
 
     def Predict(self):
         pass
