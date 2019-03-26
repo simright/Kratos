@@ -1,21 +1,21 @@
 {
     "problem_data"             : {
-        "problem_name" : "benchmark03",
+        "problem_name" : "exxon_fem_beta_test_2",
         "echo_level"   : 1,
         "threads" : 1
     },
     "time_settings"            : {
-        "time_step"  : 0.0001,
+        "time_step"  : 1e-5,
         "start_time" : 0.0,
-        "end_time"   : 0.05
+        "end_time"   : 5e-4
     },
     "model_settings"           : {
-        "model_name"           : "benchmark03",
+        "model_name"           : "exxon_fem_beta_test_2",
         "dimension"            : 3,
         "domain_parts_list"    : ["Parts_bottomfem","Parts_topfem"],
-        "processes_parts_list" : ["VELOCITY_bottomwall","VELOCITY_topwall"],
+        "processes_parts_list" : ["DISPLACEMENT_bottomwall","DISPLACEMENT_topwall"],
         "input_file_settings"  : {
-            "name" : "benchmark03"
+            "name" : "exxon_fem_beta_test_2"
         }
     },
     "solver_settings"          : {
@@ -36,10 +36,10 @@
             "solving_strategy_settings"      : {
                 "line_search"            : false,
                 "max_iteration"          : 10,
-                "bossak_factor"          : -0.3,
-                "lumped_mass_matrix"     : false,
-                "consistent_mass_matrix" : true,
-                "rayleigh_beta" : 0.1
+                "bossak_factor"          : -0.01,
+                "lumped_mass_matrix"     : true,
+                "consistent_mass_matrix" : false,
+                "rayleigh_beta" : 0.0
             },
             "linear_solver_settings"         : {
                     "solver_type":     "amgcl",
@@ -58,21 +58,41 @@
         "python_module" : "assign_vector_components_to_nodes_process",
         "kratos_module" : "KratosMultiphysics.SolidMechanicsApplication",
         "Parameters"    : {
-            "model_part_name"     : "VELOCITY_bottomwall",
+            "model_part_name"     : "DISPLACEMENT_bottomwall",
             "variable_name"       : "DISPLACEMENT",
-            "value"               : [null,null,"0.05*t"],
+            "value"               : [0.0,0.0,"0.2*t"],
             "compound_assignment" : "direct",
-            "interval"            : [0.0,"End"]
+            "interval"            : [0.0,0.001]
         }
     },{
         "python_module" : "assign_vector_components_to_nodes_process",
         "kratos_module" : "KratosMultiphysics.SolidMechanicsApplication",
         "Parameters"    : {
-            "model_part_name"     : "VELOCITY_topwall",
+            "model_part_name"     : "DISPLACEMENT_topwall",
             "variable_name"       : "DISPLACEMENT",
-            "value"               : [null,null,"-0.05*t"],
+            "value"               : [0.0,0.0,"-0.2*t"],
             "compound_assignment" : "direct",
-            "interval"            : [0.0,"End"]
+            "interval"            : [0.0,0.001]
+        }
+    },{
+        "python_module" : "assign_vector_components_to_nodes_process",
+        "kratos_module" : "KratosMultiphysics.SolidMechanicsApplication",
+        "Parameters"    : {
+            "model_part_name"     : "DISPLACEMENT_bottomwall",
+            "variable_name"       : "DISPLACEMENT",
+            "value"               : [0.0,0.0,0.0002],
+            "compound_assignment" : "direct",
+            "interval"            : [0.001,0.002]
+        }
+    },{
+        "python_module" : "assign_vector_components_to_nodes_process",
+        "kratos_module" : "KratosMultiphysics.SolidMechanicsApplication",
+        "Parameters"    : {
+            "model_part_name"     : "DISPLACEMENT_topwall",
+            "variable_name"       : "DISPLACEMENT",
+            "value"               : [0.0,0.0,-0.0002],
+            "compound_assignment" : "direct",
+            "interval"            : [0.001,0.002]
         }
     }],
     "loads_process_list"       : [],
