@@ -27,20 +27,12 @@ class DemFemSolidAnalysis(Solution):
     def _set_solution_step_variables(self):
         super(DemFemSolidAnalysis,self)._set_solution_step_variables()
 
-        self._model.main_model_part.AddNodalSolutionStepVariable(KratosMultiphysics.VOLUME_ACCELERATION)
-        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.DEM_SURFACE_LOAD)
-        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.BACKUP_LAST_STRUCTURAL_VELOCITY)
-        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.BACKUP_LAST_STRUCTURAL_DISPLACEMENT)
-        self._model.main_model_part.AddNodalSolutionStepVariable(DemFem.SMOOTHED_STRUCTURAL_VELOCITY)
-        self._model.main_model_part.AddNodalSolutionStepVariable(Dem.DELTA_DISPLACEMENT)
-        self._model.main_model_part.AddNodalSolutionStepVariable(Dem.DEM_PRESSURE)
-        self._model.main_model_part.AddNodalSolutionStepVariable(Dem.DEM_NODAL_AREA)
-        self._model.main_model_part.AddNodalSolutionStepVariable(Dem.ELASTIC_FORCES)
-        self._model.main_model_part.AddNodalSolutionStepVariable(Dem.CONTACT_FORCES)
-        self._model.main_model_part.AddNodalSolutionStepVariable(Dem.TANGENTIAL_ELASTIC_FORCES)
-        self._model.main_model_part.AddNodalSolutionStepVariable(Dem.SHEAR_STRESS)
-        self._model.main_model_part.AddNodalSolutionStepVariable(Dem.NON_DIMENSIONAL_VOLUME_WEAR)
-        self._model.main_model_part.AddNodalSolutionStepVariable(Dem.IMPACT_WEAR)
+        coupling_variables = []
+        coupling_variables = coupling_variables + ['VOLUME_ACCELERATION','DEM_SURFACE_LOAD','NON_DIMENSIONAL_VOLUME_WEAR','IMPACT_WEAR']
+        coupling_variables = coupling_variables + ['SMOOTHED_STRUCTURAL_VELOCITY','DELTA_DISPLACEMENT','DEM_PRESSURE','DEM_NODAL_AREA']
+        coupling_variables = coupling_variables + ['ELASTIC_FORCES','CONTACT_FORCES','TANGENTIAL_ELASTIC_FORCES','SHEAR_STRESS']
+        coupling_variables = coupling_variables + ['BACKUP_LAST_STRUCTURAL_VELOCITY','BACKUP_LAST_STRUCTURAL_DISPLACEMENT']
+        self._model.SetVariables(coupling_variables)
 
     def FinalizeSolutionStep(self):
         clock_time = self._start_time_measuring()
