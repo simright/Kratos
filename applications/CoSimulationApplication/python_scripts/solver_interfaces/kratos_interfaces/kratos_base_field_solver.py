@@ -14,7 +14,7 @@ class KratosBaseFieldSolver(CoSimulationBaseSolver):
     def __init__(self, model, cosim_solver_settings, solver_name):
         super(KratosBaseFieldSolver, self).__init__(model, cosim_solver_settings, solver_name)
 
-        input_file_name = self.cosim_solver_settings["input_file"].GetString()
+        input_file_name = self.cosim_solver_settings["settings"]["input_file"].GetString()
         if not input_file_name.endswith(".json"):
             input_file_name += ".json"
 
