@@ -88,33 +88,58 @@ class CoSimulationBaseCouplingSolver(co_simulation_base_solver.CoSimulationBaseS
         err_msg += 'This function has to be implemented in the derived class!'
         raise Exception(err_msg)
 
-    def _SynchronizeInputData(self, solver, solver_name):
+    ## _SynchronizeInputData : Protected Function to obtain new (if any) input data for the
+    #                          participating solvers. That will get the data necessary from
+    #                          python cosim solver with name solver_name and export (if necessary)
+    #                          it to the remote solver of solver_name
+    #
+    #
+    #  So here the _SynchronizeXXXXXData functions exchange data between the python co simulation solvers.
+    #  How the solvers get their data from their remote solvers is handled in ImportCouplingInterfaceData and ExportCouplingInterfaceData
+    #  functions. Here Import and Export data functions of to_solver and from_solver are called.
+    #
+    #  @param solver_name     string: name of the solver for which data has to be synchronized
+    def _SynchronizeInputData(self, solver_name):
         if self.coupling_started:
+            solver = self.participating_solvers[solver_name]
             input_data_list = self.coupling_sequence[solver_name]["input_data_list"]
-            # TODO reimplement this properly!
-            # if self.time >= self.coupling_sequence[solver_name]["input_coupling_start_time"]:
-            for input_data in input_data_list:
+            num_input_data = input_data_list.size()
+
+            for i in range(num_input_data):
+                input_data = input_data_list[i]
                 from_solver = self.participating_solvers[input_data["from_solver"].GetString()]
                 data_name = input_data["data_name"].GetString()
-                data_definition = from_solver.GetInterfaceData(data_name)
-                data_settings = { "data_format" : data_definition["data_format"].GetString(),
-                                "data_name"   : data_name,
-                                "io_settings" : input_data["io_settings"] }
-                solver.ImportCouplingInterfaceData(data_settings, from_solver)
+                from_solver_data = from_solver.GetInterfaceData(data_name)
+                solver_data = solver.GetInterfaceData(input_data["destination_data"].GetString())
 
-    def _SynchronizeOutputData(self, solver, solver_name):
+                if(input_data.Has("mapper_settings")):
+                    solver_data.origin_data = from_solver_data
+                    solver_data.mapper_settings = input_data["mapper_settings"]
+
+                solver.ImportCouplingInterfaceData(solver_data, from_solver)
+
+    ## _SynchronizeOutputData : Protected Function to synchronize the out put data between the solver
+    #                           interface and the remote solver. This assumes that the remote solver
+    #                           has output the data in the format specified in the settings (of the out put data def in JSON)
+    #
+    def _SynchronizeOutputData(self, solver_name):
         if self.coupling_started:
+            solver = self.participating_solvers[solver_name]
             output_data_list = self.coupling_sequence[solver_name]["output_data_list"]
-            # TODO reimplement this properly!
-            # if self.time >= self.coupling_sequence[solver_name]["output_coupling_start_time"]:
-            for output_data in output_data_list:
+            num_output_data = output_data_list.size()
+
+            for i in range(num_output_data):
+                output_data = output_data_list[i]
                 to_solver = self.participating_solvers[output_data["to_solver"].GetString()]
                 data_name = output_data["data_name"].GetString()
-                data_definition = to_solver.GetInterfaceData(data_name)
-                data_settings = { "data_format" : data_definition["data_format"].GetString(),
-                                "data_name"   : data_name,
-                                "io_settings" : output_data["io_settings"] }
-                solver.ExportCouplingInterfaceData(data_settings, to_solver)
+                to_solver_data = to_solver.GetInterfaceData(data_name)
+                solver_data = solver.GetInterfaceData(output_data["origin_data"].GetString())
+
+                if(output_data.Has("mapper_settings")):
+                    solver_data.destination_data = to_solver_data
+                    solver_data.mapper_settings = output_data["mapper_settings"]
+
+                solver.ExportCouplingInterfaceData(solver_data, to_solver)
 
     def PrintInfo(self):
         super(CoSimulationBaseCouplingSolver, self).PrintInfo()
