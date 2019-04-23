@@ -3,6 +3,10 @@ from __future__ import print_function, absolute_import, division
 # Other imports
 import KratosMultiphysics.CoSimulationApplication.solver_interfaces.co_simulation_io_factory as io_factory
 
+import KratosMultiphysics.CoSimulationApplication.co_simulation_tools as tools
+# Other imports
+cs_data_structure = tools.cs_data_structure
+
 def CreateSolver(model, cosim_solver_settings):
     return CoSimulationBaseSolver(model, cosim_solver_settings)
 
@@ -13,12 +17,20 @@ class CoSimulationBaseSolver(object):
         """Constructor of the Base-Solver
         Deriving classes should call it in their constructors
         """
+
+        default_settings = cs_data_structure.Parameters("""{
+			"solver_type" : "",
+			"io_settings" : {},
+			"settings"    : {},
+			"data"        : [],
+			"echo_level"  : 0
+		}""")
+
         self.model = model
         self.cosim_solver_settings = cosim_solver_settings
+        self.cosim_solver_settings.AddMissingParameters(default_settings)
         self.name = solver_name
-        self.echo_level = 0
-        if "echo_level" in self.cosim_solver_settings:
-            self.echo_level = self.cosim_solver_settings["echo_level"]
+        self.echo_level = self.cosim_solver_settings["echo_level"].GetInt()
         self.io_is_initialized = False
 
     def Initialize(self):
@@ -28,9 +40,8 @@ class CoSimulationBaseSolver(object):
         if self.io_is_initialized:
             raise Exception('IO for "' + self.name + '" is already initialized!')
 
-        self.io = io_factory.CreateIO(self._GetIOName(),
-                                      solvers,
-                                      self.name)
+        self.io = io_factory.CreateIO(self.model, self._GetIOName(), self.cosim_solver_settings["io_settings"])
+
         self.io.SetEchoLevel(io_echo_level)
         self.io_is_initialized = True
 
