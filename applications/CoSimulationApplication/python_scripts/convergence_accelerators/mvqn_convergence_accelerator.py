@@ -23,7 +23,7 @@ class MVQN(CoSimulationBaseConvergenceAccelerator):
     ## The constructor.
     # @param horizon Maximum number of vectors to be stored in each time step.
     # @param alpha Relaxation factor for computing the update, when no vectors available.
-    def __init__( self, settings, solvers, ):
+    def __init__( self, settings, solvers):
         super(MVQN, self).__init__(settings, solvers)
         if "horizon" in self.settings:
             horizon = self.settings["horizon"]
