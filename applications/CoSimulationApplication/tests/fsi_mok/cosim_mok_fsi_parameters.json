@@ -37,83 +37,89 @@
         ],
         "coupling_sequence":
         [
-        {
-            "name": "fluid",
-            "input_data_list"  : [],
-            "output_data_list" : []
-        },
-        {
-            "name": "structure",
-            "input_data_list": [
-                {
-                    "from_solver" : "fluid",
-                    "data_name"   : "force",
-                    "io_settings"   : {
-                        "mapper_type" : "nearest_neighbor",
-                        "mapper_args" : ["swap_sign"]
-                    }
+            {
+                "name": "fluid",
+                "input_data_list"  : [],
+                "output_data_list" : []
+            },
+            {
+                "name": "structure",
+                "input_data_list": [
+                    {
+                        "from_solver"       : "fluid",
+                        "data_name"         : "REACTION",
+                        "destination_data"  :"POINT_LOAD",
+                        "mapper_settings"   : {
+                            "type" : "nearest_neighbor",
+                            "flags" : ["swap_sign"]
+                        },
+                        "filters":[]
 
-                }
-            ],
-            "output_data_list": [
-                {
-                    "to_solver" : "fluid",
-                    "data_name"   : "disp",
-                    "io_settings"   : {
-                        "mapper_type" : "nearest_neighbor"
                     }
-
-                }
-            ]
-        }
+                ],
+                "output_data_list": [
+                    {
+                        "to_solver"   : "fluid",
+                        "data_name"   : "MESH_DISPLACEMENT",
+                        "origin_data" : "DISPLACEMENT",
+                        "mapper_settings"   : {
+                            "type" : "nearest_neighbor",
+                            "flags":[]
+                        },
+                        "filters":[]
+                    }
+                ]
+            }
         ],
         "solvers" :
         {
             "fluid":
             {
                 "solver_type" : "kratos_fluid",
-                "input_file"  : "fsi_mok/ProjectParametersCFD",
-                "data" : {
-                    "disp" : {
+                "settings":{
+                    "input_file"  : "fsi_mok/ProjectParametersCFD.json"
+                },
+                "data" : [
+                    {
                         "geometry_name"   : "FluidModelPart.NoSlip2D_FSI",
-                        "data_identifier" : "MESH_DISPLACEMENT",
-                        "data_format"     : "kratos_modelpart"
+                        "name"            : "MESH_DISPLACEMENT",
+                        "dimension"       : 3
                     },
-                    "force" : {
+                    {
                         "geometry_name"   : "FluidModelPart.NoSlip2D_FSI",
-                        "type_of_quantity": "_nodal_point",
-                        "data_identifier" : "REACTION",
-                        "data_format"     : "kratos_modelpart"
+                        "name"            : "REACTION",
+                        "dimension"       : 3
                     },
-                    "vel" : {
+                    {
                         "geometry_name"   : "FluidModelPart.NoSlip2D_FSI",
-                        "data_identifier" : "VELOCITY",
-                        "data_format"     : "kratos_modelpart"
+                        "name"            : "VELOCITY",
+                        "dimension"       : 3
                     }
-                }
+                ]
             },
             "structure" :
             {
                 "solver_type" : "kratos_structural",
-                "input_file"  : "fsi_mok/ProjectParametersCSM",
-                "data" : {
-                    "disp" : {
-                        "geometry_name"   : "GENERIC_FSI",
-                        "data_identifier" : "DISPLACEMENT",
-                        "data_format"     : "kratos_modelpart"
+                "settings":{
+                    "input_file"  : "fsi_mok/ProjectParametersCSM.json"
+                },
+                "data" : [
+                    {
+                        "geometry_name"   : "Structure.GENERIC_FSI",
+                        "name"            : "DISPLACEMENT",
+                        "dimension"       : 3
                     },
-                    "force" : {
-                        "geometry_name"   : "GENERIC_FSI",
-                        "data_identifier" : "POINT_LOAD",
-                        "type_of_quantity": "_nodal_point",
-                        "data_format"     : "kratos_modelpart"
+                    {
+                        "geometry_name"   : "Structure.GENERIC_FSI",
+                        "name"            : "POINT_LOAD",
+                        "dimension"       : 3
                     },
-                    "vel" : {
-                        "geometry_name"   : "GENERIC_FSI",
-                        "data_identifier" : "VELOCITY",
-                        "data_format"     : "kratos_modelpart"
+                    {
+                        "geometry_name"   : "Structure.GENERIC_FSI",
+                        "name"            : "VELOCITY",
+                        "dimension"       : 3
                     }
-                }
+                ]
             }
         }
     }
