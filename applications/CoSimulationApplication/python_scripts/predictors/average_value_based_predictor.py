@@ -30,7 +30,7 @@ class AverageValuePredictor(CosimulationBasePredictor):
         data_current  = self.interface_data.GetNumpyArray(0)
         data_previous = self.interface_data.GetNumpyArray(1)
 
-        self.data_array_prediction = 2*self.data_current - self.data_previous
+        self.data_array_prediction = 2*data_current - data_previous
 
         self._UpdateData(self.data_array_prediction)
 
