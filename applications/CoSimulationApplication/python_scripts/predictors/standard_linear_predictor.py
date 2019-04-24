@@ -7,27 +7,22 @@ from KratosMultiphysics.CoSimulationApplication.base_classes.co_simulation_base_
 import numpy as np
 from KratosMultiphysics.CoSimulationApplication.co_simulation_tools import classprint
 
-def Create(predictor_settings, solvers):
-    return StandardLinearPredictor(predictor_settings, solvers)
+def Create(predictor_settings, solver):
+    return StandardLinearPredictor(predictor_settings, solver)
 
 class StandardLinearPredictor(CosimulationBasePredictor):
-    def __init__(self, settings, solvers):
-        super(StandardLinearPredictor, self).__init__(settings, solvers)
-        # TODO add comment why we do this
-        self.data_array_t0 = np.array([])
-        self.data_array_t1 = np.array([])
+    def __init__(self, settings, solver):
+        super(StandardLinearPredictor, self).__init__(settings, solver)
 
         # TODO check buffer size!
 
     def Predict(self):
-        solver = self.solvers[self.settings["solver"].GetString()]
-        data_name = self.settings["data_name"].GetString()
-        cs_tools.ImportArrayFromSolver(solver, data_name, self.data_array_t0, 0)
-        cs_tools.ImportArrayFromSolver(solver, data_name, self.data_array_t1, 1)
+        data_current  = self.interface_data.GetNumpyArray(0)
+        data_previous = self.interface_data.GetNumpyArray(1)
 
-        self.data_array_t0 = 2*self.data_array_t0 - data_array_t1
+        predicted_data = 2*data_current - data_previous
 
-        self._UpdateData(self.data_array_t0)
+        self._UpdateData(predicted_data)
 
     def _Name(self):
         return self.__class__.__name__
