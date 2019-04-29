@@ -1,0 +1,50 @@
+#!/bin/sh
+cmake ..                                                                           \
+-DCMAKE_C_COMPILER=/usr/bin/gcc                                                     \
+-DCMAKE_CXX_COMPILER=/usr/bin/g++                                                   \
+-DCMAKE_INSTALL_RPATH="${HOME}/Kratos2019/libs"                                   \
+-DCMAKE_INSTALL_RPATH_USE_LINK_PATH=TRUE                                            \
+-DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -msse3 -std=c++11 "                           \
+-DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -msse3 "                                          \
+-DBOOST_ROOT="${HOME}/boost"                                           \
+-DPYTHON_EXECUTABLE="/usr/bin/python3"                                           \
+-DCMAKE_BUILD_TYPE=Release                                                       \
+-DMESHING_APPLICATION=ON                                                            \
+-DEXTERNAL_SOLVERS_APPLICATION=ON                                                   \
+-DINCLUDE_FEAST=ON                                                                  \
+-DSTRUCTURAL_APPLICATION=OFF                                                         \
+-DSTRUCTURAL_MECHANICS_APPLICATION=ON                                               \
+-DDEM_STRUCTURES_COUPLING_APPLICATION=OFF                                            \
+-DCONVECTION_DIFFUSION_APPLICATION=OFF                                               \
+-DSOLID_MECHANICS_APPLICATION=ON                                                    \
+-DCONSTITUTIVE_MODELS_APPLICATION=ON                                                \
+-DFLUID_DYNAMICS_APPLICATION=OFF                                                     \
+-DSHALLOW_WATER_APPLICATION=OFF                                                       \
+-DFREE_SURFACE_APPLICATION=OFF                                                       \
+-DINCOMPRESSIBLE_FLUID_APPLICATION=OFF                                               \
+-DMESH_MOVING_APPLICATION=ON                                                        \
+-DMAPPING_APPLICATION=ON                                                           \
+-DFSI_APPLICATION=OFF                                                               \
+-DMPI_SEARCH_APPLICATION=OFF                                                        \
+-DDELAUNAY_MESHING_APPLICATION=ON                                                \
+-DCONTACT_MECHANICS_APPLICATION=ON                                               \
+-DCONTACT_STRUCTURAL_MECHANICS_APPLICATION=OFF                                    \
+-DPFEM_APPLICATION=ON                                                           \
+-DPFEM_SOLID_MECHANICS_APPLICATION=OFF                                            \
+-DPFEM_FLUID_DYNAMICS_APPLICATION=OFF                                              \
+-DPFEM2_APPLICATION=OFF                                                           \
+-DPARTICLE_MECHANICS_APPLICATION=OFF                                                \
+-DLAGRANGIAN_MPM_APPLICATION=OFF                                                    \
+-DDEM_APPLICATION=OFF                                                               \
+-DSWIMMING_DEM_APPLICATION=OFF                                                      \
+-DMIXED_ELEMENT_APPLICATION=OFF                                                     \
+-DSHAPE_OPTIMIZATION_APPLICATION=OFF                                                \
+-DTOPOLOGY_OPTIMIZATION_APPLICATION=OFF                                             \
+-DHDF5_APPLICATION=OFF                                                               \
+-DMETIS_APPLICATION=OFF                                                             \
+-DPARMETIS_ROOT_DIR="/home/youruser/compiled_libraries/ParMetis-3.1.1"              \
+-DTRILINOS_APPLICATION=OFF                                                          \
+-DTRILINOS_ROOT="/home/youruser/compiled_libraries/trilinos-10.2.0"                 \
+-DINSTALL_EMBEDDED_PYTHON=ON
+make -j4
+make install
