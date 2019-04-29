@@ -21,7 +21,7 @@ rm CMakeCache.txt
 rm *.cmake
 rm -rf CMakeFiles\
 
-cmake ..                                                                            \
+cmake ..                                                                           \
 -DCMAKE_C_COMPILER=/usr/bin/gcc                                                     \
 -DCMAKE_CXX_COMPILER=/usr/bin/g++                                                   \
 -DCMAKE_INSTALL_RPATH="${HOME}/Kratos2019/libs"                                   \
