@@ -50,7 +50,7 @@ cmake ..                                                                        
 -DMPI_SEARCH_APPLICATION=OFF                                                        \
 -DDELAUNAY_MESHING_APPLICATION=ON                                                \
 -DCONTACT_MECHANICS_APPLICATION=ON                                               \
--DCONTACT_STRUCTURAL_MECHANICS_APPLICATION=OFF                                    \
+-DCONTACT_STRUCTURAL_MECHANICS_APPLICATION=ON                                    \
 -DPFEM_APPLICATION=ON                                                           \
 -DPFEM_SOLID_MECHANICS_APPLICATION=OFF                                            \
 -DPFEM_FLUID_DYNAMICS_APPLICATION=OFF                                              \
@@ -71,5 +71,5 @@ cmake ..                                                                        
 
 # decomment this to have it verbose
 # make VERBOSE=1 -j4
-make -j4
+make -j2
 make install
