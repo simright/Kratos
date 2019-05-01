@@ -71,5 +71,5 @@ cmake ..                                                                        
 
 # decomment this to have it verbose
 # make VERBOSE=1 -j4
-make -j1
+make -j2
 make install
